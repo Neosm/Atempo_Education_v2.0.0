@@ -1,0 +1,80 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Hello PostsController!
+{% endblock %}
+
+{% block body %}
+	<div class="d-flex">
+		<h1 class="h3 mb-3 primary-color mt-3 col-10">
+			<i class="bi bi-newspaper h3 me-1"></i>
+			Actualités</h1>
+
+		{% if is_granted('ROLE_TEACHER') %}
+			<a href="{{ path('app_posts_add') }}" class="text-decoration-none btn third-custom-button ms-2 col-2 align-self-center">
+				Ajouter un article
+			</a>
+		{% endif %}
+	</div>
+	<form id="filters">
+		{% for categorie in categories %}
+			{# On vérifie si la catégorie est dans les paramètres #}
+			{% if queryParams is not empty and queryParams.categories is defined %}
+				{% set checked = (categorie.id in queryParams.categories) ? "checked" : "" %}
+			{% else %}
+				{% set checked = "" %}
+			{% endif %}
+			<input type="checkbox" autocomplete="off" name="categories" id="cat{{categorie.id}}" value="{{categorie.id}}" class="btn-check" {{checked}}>
+			<label for="cat{{categorie.id}}" class="btn btn-lg btn-primary">{{categorie.name}}</label>
+		{% endfor %}
+		<input type="hidden" name="page" value="{{ page }}">
+	</form>
+	<br>
+	<div class="row row-cols-1 row-cols-md-2 g-4" id="actualitesFiltre">
+		{% include "posts/_content.html.twig" %}
+	</div>
+{% endblock %}
+
+{% block javascripts %}
+	<script>
+
+		window.onload = () => {
+const FiltersForm = document.querySelector("#filters");
+
+// On boucle sur les input
+document.querySelectorAll("#filters input").forEach(input => {
+input.addEventListener("change", () => {
+// Ici on intercepte les clics
+// On récupère les données du formulaire
+const Form = new FormData(FiltersForm);
+
+// On fabrique la "queryString"
+const Params = new URLSearchParams();
+
+Form.forEach((value, key) => {
+Params.append(key, value);
+});
+
+// On récupère l'url active
+const Url = new URL(window.location.href);
+
+// On lance la requête ajax
+fetch(Url.pathname + "?" + Params.toString() + "&ajax=1", {
+headers: {
+"X-Requested-With": "XMLHttpRequest"
+}
+}).then(response => response.json()).then(data => { // On va chercher la zone de contenu
+const content = document.querySelector("#actualitesFiltre");
+
+// On remplace le contenu
+content.innerHTML = data.content;
+
+// On met à jour l'url
+history.pushState({}, null, Url.pathname + "?" + Params.toString());
+}).catch(e => alert(e));
+
+});
+});
+}
+	</script>
+{% endblock %}
+

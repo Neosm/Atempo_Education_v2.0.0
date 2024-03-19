@@ -1,0 +1,76 @@
+
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ article.name }} - Actus{% endblock %}
+
+{% block stylesheets %}
+<style>
+    /* Styles personnalisés pour les badges */
+    .badge {
+        padding: 6px 12px;
+        border-radius: 5px;
+        font-size: 0.85rem;
+        font-weight: 600;
+    }
+
+    .badge.badge-primary {
+        background-color: #007bff;
+    }
+
+    /* Badge Secondary */
+    .badge.badge-secondary {
+        background-color: #6c757d;
+    }
+
+    /* Lorsque le badge est survolé */
+    .badge:hover {
+        background-color: green;
+        color: #fff;
+        cursor: pointer;
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+
+<div class="container my-5">
+    <a href="{{ path('app_posts_home') }}" class="text-decoration-none btn primary-custom-button ms-2 align-self-center mb-3">
+	    Toutes les actualités
+	</a>
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card mb-4">
+                <img src="{{ asset('/uploads/posts/images/' ~ article.thumbnail) }}" class="card-img-top" alt="{{ article.thumbnail }}">
+                <div class="card-body">
+                    <h1 class="card-title">{{ article.name }}</h1>
+                    <div class="card-text">
+                        {{ article.content|raw }}
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h4 class="card-title">Écrit par</h4>
+                    <p class="card-text">{{ article.author.firstname }} {{ article.author.lastname }}</p>
+                    {% if app.user == article.author %}
+                    <a href="{{ path('app_posts_modify', {slug: article.slug}) }}" class="text-decoration-none btn primary-custom-button ms-2 align-self-center">
+								Modifier l'actualité
+							</a>
+                    {% endif %}
+                    
+                </div>
+            </div>
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h4 class="card-title">Date de publication</h4>
+                    <p class="card-text">{{ article.createdAt|date }}</p>
+                </div>
+            </div>
+        </div>
+            
+        </div>
+    </div>
+</div>
+{% endblock %}

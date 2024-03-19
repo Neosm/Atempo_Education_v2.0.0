@@ -1,0 +1,219 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Atempo Education!
+{% endblock %}
+
+{% block body %}
+	{% set today = "now"|date("Y-m-d H:i", 'Europe/Paris') %}
+	{% set nextEvents = [] %}
+	{% if not is_granted('ROLE_TEACHER') %}
+		{% for event in app.user.courses %}
+			{% if event.start|date("Y-m-d H:i") >= today %}
+				{% set nextEvents = nextEvents|merge([event]) %}
+			{% endif %}
+		{% endfor %}
+		{% if app.user.studentClasses is not null %}
+			{% for event in app.user.studentClasses.courses %}
+				{% if event.start|date("Y-m-d H:i") >= today %}
+					{% set nextEvents = nextEvents|merge([event]) %}
+				{% endif %}
+			{% endfor %}
+		{% endif %}
+	{% elseif is_granted('ROLE_TEACHER') %}
+		{% for event in app.user.coursesteacher %}
+			{% if event.start|date("Y-m-d H:i") >= today %}
+				{% set nextEvents = nextEvents|merge([event]) %}
+			{% endif %}
+		{% endfor %}
+		{% if app.user.studentClasses is not null %}
+			{% for event in app.user.studentClasses.courses %}
+				{% if event.start|date("Y-m-d H:i") >= today %}
+					{% set nextEvents = nextEvents|merge([event]) %}
+				{% endif %}
+			{% endfor %}
+		{% endif %}
+	{% endif %}
+	<div class="container-fluid">
+		<div class="row">
+			<!-- Colonne de gauche -->
+			<div
+				class="col-md-7 m-4 mt-5">
+				<!-- Boutons arrondis -->
+				<div class="d-flex">
+					<a href="{{ path('app_courses') }}" class="btn primary-custom-button flex-fill mx-2 mb-5 p-3 mt-0">
+						<i class="bi bi-plus"></i>
+						Ajouter un cours
+					</a>
+					<a href="{{ path('app_lessons_add') }}" class="btn primary-custom-button flex-fill mx-2 mb-5 p-3 mt-0">
+						<i class="bi bi-plus"></i>
+						Ajouter une leçon
+					</a>
+					<a href="" class="btn primary-custom-button flex-fill mx-2 mb-5 p-3 mt-0">
+						<i class="bi bi-plus"></i>
+						Bilan de cours
+					</a>
+				</div>
+				<!-- Carte pour le contenu "Élèves" -->
+				<div class="card mb-4 card-shadow" style="border-radius: 15px;">
+					<div class="card-body p-4 pb-0 text-black">
+						<div>
+							<h2 class="mb-4 primary-color font-weight-bold h3">
+								<i class="bi bi-people-fill h3 me-1"></i>
+								{% if is_granted("ROLE_TEACHER") %}
+									ÉLÈVES
+								{% else %}
+									PROFESSEURS
+								{% endif %}
+								</h2>
+							<div class="d-flex align-items-center justify-content-between mb-3 border-top"></div>
+						</div>
+						{% for user in users %}
+							<a href="">
+								<div class="d-flex align-items-center mb-3">
+									<div class="flex-shrink-0">
+										<img src="{{ asset('/uploads/profile_pics/' ~ user.thumbnail) }}" alt="Generic placeholder image" class="img-fluid rounded-circle shadow" style="width: 70px;">
+									</div>
+									<div class="flex-grow-1 ms-3">
+										<div class="align-items-center mb-0 ms-4">
+											<p class="">{{ user.firstname }}
+												{{ user.lastname }}</p>
+											<p class="text-muted text-secondary mb-0">Prochain cours individuel le
+											{% if is_granted('ROLE_TEACHER') %}
+												{{ user.courses.last.start|format_datetime(pattern="dd MMM HH:mm") }}</p>
+											{% else %}
+												{{ user.coursesteacher.last.start|format_datetime(pattern="dd MMM HH:mm") }}</p>
+											{% endif %}
+										</div>
+									</div>
+								</div>
+							</a>
+							{% if not loop.last %}
+								<hr>
+							{% endif %}
+						{% endfor %}
+						<div class="border-top"></div>
+						<a href="">
+							<p class="my-4 pb-1 text-center fw-bold fs-5">Tous les élèves</p>
+						</a>
+					</div>
+				</div>
+				<!-- Carte pour le contenu "Actualité" -->
+				<div class="card mb-4 card-shadow" style="border-radius: 15px;">
+					<div class="card-body p-4 pb-0 text-black">
+						<div>
+							<h2 class="mb-4 primary-color font-weight-bold h3">
+								<i class="bi bi-newspaper h3 me-1"></i>
+								ACTUALITÉS</h2>
+							<div class="d-flex align-items-center justify-content-between mb-3 border-top"></div>
+						</div>
+						{% if articles %}
+							{% for article in articles|slice(0,2) %}
+								<div class="my-3">
+									<div class="d-flex align-items-center">
+										<div class="flex-grow-1 ms-3">
+											<div class="d-flex flex-row align-items-center mb-0 ms-4">
+												<p class="h3 pe-3 primary-color">{{ article.name }}</p>
+												<p class="text-muted text-secondary mb-0">créé le
+													{{ article.createdAt|date("d M Y") }}</p>
+
+											</div>
+											{{ article.content|striptags|u.truncate(400, '...')|raw }}
+										</div>
+									</div>
+									<a href="{{ path('app_posts_details', {slug: article.slug}) }}" class="text-dark fw-bold mb-3">Lire la suite</a>
+								</div>
+
+							{% endfor %}
+						{% else %}
+							Aucune Actualité pour le moment. Revenez plus tard.
+						{% endif %}
+						<div class="border-top"></div>
+						<a href="{{ path('app_posts_home') }}">
+							<p class="my-4 pb-1 text-center fw-bold fs-5">Toutes les actualités</p>
+						</a>
+					</div>
+				</div>
+			</div>
+			<!-- Colonne de droite -->
+			<div class="col-md-4 mt-5">
+				<!-- Première boîte de droite -->
+				<div class="card mb-4 card-shadow" style="border-radius: 15px;">
+					<div class="card-body p-4 pb-0 text-black">
+						<div>
+							<h2 class="mb-4 primary-color font-weight-bold h3">
+								<i class="bi bi-calendar3 h3 me-1"></i>
+								AGENDA</h2>
+							<div class="d-flex align-items-center justify-content-between mb-3 border-top"></div>
+						</div>
+						{% set nextEvents = nextEvents|sort((a, b) => a.start <=> b.start)|slice(0, 3) %}
+						{% if nextEvents|length > 0 %}
+							{% for event in nextEvents %}
+								<a href="{{ path('app_calendar_details',{id: event.id}) }}" style="color: {{ event.textcolor }}!important" class="">
+									<div class="card mb-3" style="border-radius: 25px;">
+										<div class="card-body p-4" style= "border-radius: 25px; background: {{ event.backgroundcolor }}!important">
+											<h3 class="mb-3 h4"  style="border-radius: 15px; color: {{ event.textcolor }}!important">{{ event.name }}</h3>
+											<p class="small mb-0" style="color: {{ event.textcolor }}!important">
+												{{ event.start|format_datetime(pattern="eeee d MMM à HH'h'mm") }}
+												<span class="mx-2">|</span>
+												{% if event.room is not null %}
+													Salle :
+													{{ event.room.name }}</span>
+												{% elseif event.zoomlink is not null %}
+													A distanciel :
+													<a href="{{ event.zoomlink }}" target="_blank" rel="noopener noreferrer">Lien Zoom</a>
+												{% endif %}
+											</p>
+										</div>
+									</div>
+								</a>
+							{% endfor %}
+						{% else %}
+							Aucun prochain cours pour le moment. Revenez plus tard.
+						{% endif %}
+					<div class="border-top"></div>
+					<a href="{{ path('app_calendar_home') }}">
+						<p class="my-4 pb-1 text-center fw-bold fs-5">Tout mon agenda</p>
+					</a>
+				</div>
+			</div>
+			<div class="card mb-4 card-shadow" style="border-radius: 15px;">
+				<div class="card-body p-4 pb-0 text-black">
+					<div>
+						<h2 class="mb-4 primary-color font-weight-bold h3">
+							<i class="bi bi-calendar3 h3 me-1"></i>
+							ÉVALUATIONS</h2>
+						<div class="d-flex align-items-center justify-content-between mb-3 border-top"></div>
+					</div>
+					{# {% set nextEvents = nextEvents|sort((a, b) => a.start <=> b.start)|slice(0, 3) %}
+																																																									{% if nextEvents|length > 0 %}
+																																																										{% for event in nextEvents %}
+																																																											<a href="{{ path('agenda_event_details',{id: event.id}) }}" class="text-black-50">
+																																																												<div class="card mb-3" style="border-radius: 15px;">
+																																																													<div class="card-body p-4">
+																																																														<h3 class="mb-3 primary-color h4">{{ event.title }}</h3>
+																																																														<p class="small mb-0"> {{ event.start|format_datetime(pattern="eeee d MMM à HH'h'mm") }} <span class="mx-2">|</span>
+																																																															{% if event.room is not null %}
+																																																																	Salle :
+																																																																	{{ event.room.name }}</span>
+																																																															{% elseif event.zoomlink is not null %}
+																																																																A distanciel : 
+																																																																<a href="{{ event.zoomlink }}" target="_blank" rel="noopener noreferrer">Lien Zoom</a>
+																																																															{% endif %}
+																																																														</p>
+																																																													</div>
+																																																												</div>
+																																																											</a>
+																																																										{% endfor %}
+																																																									{% else %}
+																																																									Aucun prochain cours pour le moment. Revenez plus tard. 
+																																																									{% endif %} #}
+					<div class="border-top"></div>
+					<a href="">
+						<p class="my-4 pb-1 text-center fw-bold fs-5">Toutes mes évaluations</p>
+					</a>
+				</div>
+			</div>
+		</div>
+	</div>
+{% endblock %}
+

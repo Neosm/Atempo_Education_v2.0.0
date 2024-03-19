@@ -1,0 +1,184 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Leçons
+{% endblock %}
+
+
+{% block body %}
+	{% set today = "now"|date("Y-m-d H:i", 'Europe/Paris') %}
+	{% set nextEvents = [] %}
+	{% if not is_granted('ROLE_TEACHER') %}
+		{% for event in app.user.courses %}
+			{% if event.start|date("Y-m-d H:i") >= today %}
+				{% set nextEvents = nextEvents|merge([event]) %}
+			{% endif %}
+		{% endfor %}
+		{% if app.user.studentClasses is not null %}
+			{% for event in app.user.studentClasses.courses %}
+				{% if event.start|date("Y-m-d H:i") >= today %}
+					{% set nextEvents = nextEvents|merge([event]) %}
+				{% endif %}
+			{% endfor %}
+		{% endif %}
+	{% elseif is_granted('ROLE_TEACHER') %}
+		{% for event in app.user.coursesteacher %}
+			{% if event.start|date("Y-m-d H:i") >= today %}
+				{% set nextEvents = nextEvents|merge([event]) %}
+			{% endif %}
+		{% endfor %}
+		{% if app.user.studentClasses is not null %}
+			{% for event in app.user.studentClasses.courses %}
+				{% if event.start|date("Y-m-d H:i") >= today %}
+					{% set nextEvents = nextEvents|merge([event]) %}
+				{% endif %}
+			{% endfor %}
+		{% endif %}
+	{% endif %}
+	<div class="container-fluid">
+		<div
+			class="row">
+			<!-- Colonne de gauche -->
+			<div
+				class="col-md-7 m-4 mt-5">
+				<!-- Boutons arrondis -->
+				<div class="d-flex">
+					<a href="{{ path('app_courses') }}" class="btn secondary-custom-button flex-fill mx-2 mb-5 p-3 mt-0 ">
+						Cours
+					</a>
+					<a href="{{ path('app_lessons_home') }}" class="btn secondary-custom-button flex-fill mx-2 mb-5 p-3 mt-0 active">
+						Leçons
+					</a>
+					<a href="{{ path('app_programs_home') }}" class="btn secondary-custom-button flex-fill mx-2 mb-5 p-3 mt-0 ">
+						Programmes
+					</a>
+				</div>
+				<!-- Carte pour le contenu "Élèves" -->
+				<div class="card mb-4 card-shadow" style="border-radius: 15px;">
+					<div class="card-body p-4 pb-0 text-black">
+						<div>
+							<div class="d-flex justify-content-between align-items-center mb-4 ">
+								<h2 class="primary-color font-weight-bold h3">
+									<i class="bi bi-file-earmark-text-fill h3 me-1"></i>
+									MES DERNIÈRES LEÇONS
+								</h2>
+							</div>
+							{% set count = 0 %}
+							{% for lesson in lessons |sort((a, b) => b.createdAt <=> a.createdAt) %}
+								{% if lesson == app.user.lessons or lesson.type == 1 and count < 5 %}
+									<div class="d-flex align-items-center justify-content-between border-top">
+										<div class="row g-0">
+											<div class="col-md-4">
+												<img src="{{ asset('/uploads/lessons/images/' ~ lesson.thumnail) }}" alt="Atempo-Education | {{ lesson.thumnail }}" class="img-fluid rounded-start">
+											</div>
+											<div class="col-md-8">
+												<div class="card-body">
+													<a href="{{ path('app_lessons_details', {slug: lesson.slug}) }}" class="text-decoration-none">
+														<h3 class="card-title h5">{{ lesson.name }}</h3>
+														<p class="card-text text-dark">{{ lesson.content|striptags|u.truncate(75, '...')|raw }}</p>
+													</a>
+													<p class="card-text">
+														{% if lesson.lessonsPdfs is not empty %}
+															<i class="bi bi-file-earmark-pdf primary-color" style="font-size: 2rem;"></i>
+														{% else %}
+															<i class="bi bi-file-earmark-pdf text-muted" style="font-size: 2rem;"></i>
+														{% endif %}
+														{% if lesson.lessonsAudios is not empty %}
+															<i class="bi bi-volume-up-fill primary-color" style="font-size: 2rem;"></i>
+														{% else %}
+															<i class="bi bi-volume-up-fill text-muted" style="font-size: 2rem;"></i>
+														{% endif %}
+														{% if lesson.lessonsVideos is not empty %}
+															<i class="bi bi-camera-video-fill primary-color" style="font-size: 2rem;"></i>
+														{% else %}
+															<i class="bi bi-camera-video-fill text-muted" style="font-size: 2rem;"></i>
+														{% endif %}
+														<a href="{{ path('app_lessons_details', {slug: lesson.slug}) }}" class="btn third-custom-button float-end">
+															Voir la leçon
+														</a>
+													</p>
+												</div>
+											</div>
+										</div>
+									</div>
+								{% endif %}
+            					{% set count = count + 1 %}
+							{% endfor %}
+						</div>
+
+						<div class="border-top">
+							<a href="">
+								<p class="my-4 pb-1 text-center fw-bold fs-5">Afficher plus de leçons</p>
+							</a>
+						</div>
+					</div>
+				</div>
+			</div>
+			<!-- Colonne de droite -->
+			<div
+				class="col-md-4 mt-5">
+				<!-- Première boîte de droite -->
+				{% if is_granted('ROLE_TEACHER') %}
+					<a href="{{ path('app_lessons_add') }}" class="btn primary-custom-button flex-fill mx-2 mb-5 p-3 mt-0  w-100">
+						Ajouter une leçon
+					</a>
+				{% endif %}
+				<div class="card mb-4 card-shadow" style="border-radius: 15px;">
+					<div class="card-body p-4 pb-0 text-black">
+						<div>
+							<h2 class="mb-4 primary-color font-weight-bold h3">
+								<i class="bi bi-calendar3 h3 me-1"></i>
+								AGENDA</h2>
+							<div class="d-flex align-items-center justify-content-between mb-3 border-top"></div>
+						</div>
+						{% set nextEvents = nextEvents|sort((a, b) => a.start <=> b.start)|slice(0, 3) %}
+						{% if nextEvents|length > 0 %}
+							{% for event in nextEvents %}
+								<a href="{{ path('app_calendar_details',{id: event.id}) }}" style="color: {{ event.textcolor }}!important" class="">
+									<div class="card mb-3" style="border-radius: 25px;">
+										<div class="card-body p-4" style= "border-radius: 25px; background: {{ event.backgroundcolor }}!important">
+											<h3 class="mb-3 h4"  style="border-radius: 15px; color: {{ event.textcolor }}!important">{{ event.name }}</h3>
+											<p class="small mb-0" style="color: {{ event.textcolor }}!important">
+												{{ event.start|format_datetime(pattern="eeee d MMM à HH'h'mm") }}
+												<span class="mx-2">|</span>
+												{% if event.room is not null %}
+													Salle :
+													{{ event.room.name }}</span>
+											{% elseif event.zoomlink is not null %}
+												A distanciel :
+												<a href="{{ event.zoomlink }}" target="_blank" rel="noopener noreferrer">Lien Zoom</a>
+											{% endif %}
+										</p>
+									</div>
+								</div>
+							</a>
+						{% endfor %}
+					{% else %}
+						Aucun prochain cours pour le moment. Revenez plus tard.
+					{% endif %}
+					<div class="border-top"></div>
+					<a href="{{ path('app_calendar_home') }}">
+						<p class="my-4 pb-1 text-center fw-bold fs-5">Tout mon agenda</p>
+					</a>
+				</div>
+				</div>
+				<div class="card mb-4 card-shadow" style="border-radius: 15px;">
+					<div class="card-body p-4 pb-0 text-black">
+						<div>
+							<h2 class="mb-4 primary-color font-weight-bold h3">
+								<i class="bi bi-calendar3 h3 me-1"></i>
+								ÉVALUATIONS</h2>
+							<div class="d-flex align-items-center justify-content-between mb-3 border-top"></div>
+						</div>
+
+						<div class="border-top">
+							<a href="">
+								<p class="my-4 pb-1 text-center fw-bold fs-5">Mes évaluations</p>
+							</a>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+{% endblock %}
+

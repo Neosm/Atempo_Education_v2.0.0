@@ -1,0 +1,115 @@
+{% extends 'base.html.twig' %}
+
+{% block stylesheets %}
+<link href="https://cdn.jsdelivr.net/npm/tom-select@2.0.0/dist/css/tom-select.css" rel="stylesheet">
+{% endblock %}
+
+{% block title %}
+	{% if app.request.attributes.get('_route') == 'app_programs_modify' %}
+		Modifier le programme
+		{{ program.name }}
+	{% else %}
+		Ajouter un programme
+	{% endif %}
+{% endblock %}
+
+
+{% block body %}
+<section class="my-4">
+{% if app.request.attributes.get('_route') == 'app_programs_modify' %}
+		<h1 class="h3 my-3">Modifier le programme :
+			{{ program.name }}</h1>
+	{% else %}
+		<h1 class="h3 my-3">Ajouter un programme</h1>
+	{% endif %}
+
+	{{ form_start(form) }}
+
+	<div class="row mb-4">
+		<div class="col">
+			<div data-mdb-input-init class="">
+				{{ form_label(form.name) }}
+				{{ form_widget(form.name) }}
+			</div>
+		</div>
+		<div class="col">
+			<div data-mdb-input-init class="">
+				{{ form_label(form.type) }}
+				{{ form_widget(form.type) }}
+			</div>
+		</div>
+	</div>
+
+	<div data-mdb-input-init class="mb-4 select-users">
+		{{ form_label(form.users) }}
+		{{ form_widget(form.users) }}
+	</div>
+
+	<div class="row mb-4">
+		<div class="col">
+			<div data-mdb-input-init class="mb-4">
+				{{ form_label(form.thumbnail) }}
+				{{ form_widget(form.thumbnail) }}
+				{% if app.request.attributes.get('_route') == 'app_programs_modify' %}
+					<div>
+						<img src="/uploads/programs/images/{{program.thumbnail}}" alt="Atempo-Education | {{ program.thumbnail }}" height="150">
+					</div>
+				{% endif %}
+			</div>
+		</div>
+	</div>
+
+	
+	{% if app.request.attributes.get('_route') == 'app_programs_modify' %}
+	<button type="submit" class="btn primary-custom-button">Modifier le programme</button>
+	{% else %}
+	<button type="submit" class="btn primary-custom-button">Créer le programme</button>
+	{% endif %}
+
+
+	
+	<a href="{{ path('app_programs_home') }}" class="btn secondary-custom-button float-end">Retour aux programmes</a>
+
+	{{ form_end(form) }}
+
+</section>
+{% endblock %}
+
+{% block javascripts %}
+<script src="https://cdn.jsdelivr.net/npm/tom-select@2.0.0/dist/js/tom-select.complete.min.js"></script>
+    <script>
+        let Camoufle = document.querySelector("#programs_users");
+        let ParentCamoufle = Camoufle.parentElement;
+        ParentCamoufle.classList.add('d-none');
+
+        window.onload = () => {
+            function bindSelect (select) {
+            new TomSelect(select, {
+                hideSelected: true,
+                closeAfterSelect: true,
+                maxOptions: 20,
+                plugins: {
+                    remove_button: {
+                        title: 'Supprimer l\'utilisateur'
+                    }
+                }
+            })
+        }
+        Array.from(document.querySelectorAll('select[multiple]')).map(bindSelect)
+
+            // On va chercher le type de programmes
+            let TypePrograms = document.querySelector("#programs_type");
+
+            TypePrograms.addEventListener("change", function () {
+                let form = this.closest("form");
+                let data = this.name + "=" + this.value;
+                if (data !== 'programs[type]=0') {
+                    ParentCamoufle.classList.add('d-none');
+                } else {
+                    ParentCamoufle.classList.remove('d-none');
+                }
+            });
+        }
+    </script>
+
+{% endblock %}

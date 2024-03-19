@@ -1,0 +1,238 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}
+	{{ event.name }}
+{% endblock %}
+
+{% block stylesheets %}
+	<style>
+		.card-title {
+			font-size: 24px !important;
+		}
+		.card-header {
+			background-color: #f8f9fa;
+			font-size: 20px;
+		}
+		.card-text {
+			font-size: 16px !important;
+		}
+		.event-icon {
+			font-size: 24px;
+			margin-right: 10px;
+		}
+		.event-start {
+			color: green;
+		}
+		.event-end {
+			color: red;
+		}
+	</style>
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+
+{% endblock %}
+
+{% block body %}
+	<h1>
+		<i class="bi bi-calendar3 event-icon"></i>
+		Détails de l'évènement
+	</h1>
+	<div class="container mt-5">
+		<div class="row">
+			<div class="col-lg-8 offset-lg-2">
+				<div class="card mb-4">
+					<div class="card-body">
+						<h3 class="card-title">{{ event.name }}</h3>
+						<hr>
+						<div class="row">
+							<div class="col-md-6">
+								<p class="card-text">
+									<i class="bi bi-circle-fill event-icon event-start"></i>
+									Date de début :
+									{{ event.start|date('d/m/Y H:i') }}</p>
+								<p class="card-text">
+									<i class="bi bi-clock event-icon"></i>
+									Durée :
+									{{ event.duration }}
+									minutes</p>
+								<p class="card-text">
+									<i class="bi bi-circle-fill event-icon event-end"></i>
+									Date de fin :
+									{{ event.end|date('d/m/Y H:i') }}</p>
+								{% if event.room %}
+									<p class="card-text">
+										<i class="bi bi-geo-alt event-icon"></i>
+										Salle de classe :
+										{{ event.room.name }}</p>
+								{% elseif event.zoomlink %}
+									<p class="card-text">
+										<i class="bi bi-link event-icon"></i>
+										<a href="{{event.zoomlink}}" target="_blank">Lien Zoom
+										</a>
+									</p>
+								{% endif %}
+
+								{% if event.teacher is defined %}
+									<p class="card-text">
+										<i class="bi bi-person event-icon"></i>
+										Professeur :
+										{{ event.teacher.UserIdentifier }}</p>
+								{% endif %}
+							</div>
+							<div class="col-md-6">
+								{% if event.studentClasses is not null %}
+									<p class="card-text">
+										<i class="bi bi-people event-icon"></i>
+										Classe :
+										{% for studentClass in event.studentClasses %}
+											{{ studentClass.name }}
+										{% endfor %}
+									</p>
+								{% endif %}
+								{% if event.students is not empty %}
+									<p class="card-text">
+										<i class="bi bi-person-check event-icon"></i>
+										Élèves :</p>
+									<ul class="list-unstyled">
+										{% for student in event.students %}
+											<li>{{ student.UserIdentifier }}</li>
+										{% endfor %}
+									</ul>
+								{% endif %}
+								{% if event.programs is not empty %}
+									<p class="card-text">
+										<i class="bi bi-journal-bookmark event-icon"></i>
+										Programme :
+									</p>
+									<ul class="list-unstyled">
+										{% for programme in event.programs %}
+											<li>
+												<a href="{{ path('app_programs_details', {slug: programme.slug}) }}">{{ programme.name }}</a>
+											</li>
+										{% endfor %}
+									</ul>
+								{% else %}
+									<p class="card-text">
+										<i class="bi bi-journal-bookmark event-icon"></i>
+										Aucun programme
+									</p>
+								{% endif %}
+								{% if event.lessons is not empty %}
+									<p class="card-text">
+										<i class="bi bi-book event-icon"></i>
+										Leçons :
+									</p>
+									<ul class="list-unstyled">
+										{% for lecon in event.lessons %}
+											<li>
+												<a href="{{ path('app_lessons_details', {slug: lecon.slug}) }}">{{ lecon.name }}
+												</a>
+											</li>
+										{% endfor %}
+									</ul>
+								{% else %}
+									<p class="card-text">
+										<i class="bi bi-book event-icon"></i>
+										Aucune leçon
+									</p>
+								{% endif %}
+
+							</div>
+						</div>
+						<hr>
+						{% if event.objectives is defined and event.objectives is not null and event.start > date() %}
+							<p class="card-text">
+								<i class="bi bi-chat-dots"></i>
+								Travail à faire et objectif de la séance :
+								{{ event.objectives }}</p>
+						{% endif %}
+
+						{% if event.comment is defined and event.comment is not null and event.start < date() %}
+							<p class="card-text">
+								<i class="bi bi-chat-dots"></i>
+								Commentaire :
+								{{ event.comment }}</p>
+						{% endif %}
+					</div>
+				</div>
+				<div class="text-center">
+					<a href="{{ path('app_calendar_home') }}" class="btn btn-primary">Retour à l'agenda</a>
+					{% if is_granted ('ROLE_TEACHER') %}
+						<div class="float-end">
+							<a href="{{ path('app_calendar_modify', {'id': event.id}) }}" class="btn secondary-custom-button ">Modifier</a>
+							<button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal">
+								Supprimer
+							</button>
+						</div>
+					{% endif %}
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- Modal de confirmation de suppression -->
+	<div class="modal fade" id="deleteModal" data-bs-keyboard="false" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+		<div class="modal-dialog modal-dialog-centered w-75 h-75">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title" id="deleteModalLabel">Confirmation de suppression</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+				</div>
+				<div class="modal-body">
+					<p>Êtes-vous sûr de vouloir supprimer cet événement ?</p>
+					{% if recurrence is not same as null %}
+						<form id="deleteScopeForm">
+							<div class="mb-3">
+								<label for="deleteScope" class="form-label">Sélectionnez le scope :</label>
+								<select class="form-select" id="deleteScope" name="deleteScope">
+									<option value="this_event">Cet évènement</option>
+									<option value="all_events">Tous les événements</option>
+									<option value="future_events">Événements futurs uniquement</option>
+								</select>
+							</div>
+						</form>
+					{% endif %}
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+					<a href="#" class="btn btn-danger delete-event" data-event-id="{{event.id}}">Supprimer</a>
+				</div>
+			</div>
+		</div>
+	</div>
+{% endblock %}
+
+
+{% block javascripts %}
+	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+
+	<script>
+		$(document).on('click', '.delete-event', function (e) {
+e.preventDefault();
+var eventId = $(this).attr('data-event-id');
+var isScopeVisible = $('#deleteScopeForm').is(':visible'); // Vérifier si le formulaire de scope est affiché
+
+if (isScopeVisible) { // Le formulaire de scope est visible, nous traitons en fonction du scope sélectionné
+var selectedScope = $('#deleteScope').val(); // Récupérer la valeur du scope sélectionné dans le formulaire
+
+if (selectedScope === 'this_event') { // Suppression de l'événement actuel
+var deleteUrl = '{{ path('app_calendar_delete', {'id': 'eventId'}) }}';
+} else if (selectedScope === 'all_events') { // Suppression de tous les événements
+var deleteUrl = '{{ path('app_calendar_delete_all_courses', {'id': 'eventId'}) }}';
+} else if (selectedScope === 'future_events') { // Suppression des événements futurs uniquement
+var deleteUrl = '{{ path('app_calendar_delete_future_courses', {'id': 'eventId'}) }}';
+} else { // Valeur de scope non reconnue
+console.error('Valeur de scope non reconnue : ' + selectedScope);
+return;
+}
+} else { // Le formulaire de scope n'est pas visible, nous utilisons le chemin de suppression classique
+var deleteUrl = '{{ path('app_calendar_delete', {'id': 'eventId'}) }}';
+}
+
+// Remplacer 'eventId' dans l'URL de suppression par l'ID de l'événement
+deleteUrl = deleteUrl.replace('eventId', eventId);
+
+// Rediriger vers l'URL appropriée pour effectuer la suppression
+window.location.assign(deleteUrl);
+});
+	</script>
+{% endblock %}

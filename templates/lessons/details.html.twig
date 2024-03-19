@@ -1,0 +1,122 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}
+	{{ lessons.name }}
+{% endblock %}
+
+
+{% block body %}
+	<section class="my-4">
+		<div class="col-12 d-flex">
+			<nav aria-label="breadcrumb " class="col-8">
+				<ol class="breadcrumb">
+					<li class="breadcrumb-item">
+						<a href="{{ path('app_home') }}">Accueil</a>
+					</li>
+					<li class="breadcrumb-item">
+						<a href="{{ path('app_courses') }}">Cours</a>
+					</li>
+					<li class="breadcrumb-item">
+						<a href="{{ path('app_lessons_home') }}">Leçons</a>
+					</li>
+					<li class="breadcrumb-item active" aria-current="page">{{ lessons.name }}</li>
+				</ol>
+			</nav>
+			{% if is_granted('ROLE_TEACHER') and app.user in lessons.users  %}
+				<a href="{{path('app_lessons_modify', {slug : lessons.slug }) }}" class="btn primary-custom-button float-end col-2">Modifier la leçon</a>
+			{% endif %}
+		</div>
+
+
+		<div class="row my-4 col-12">
+			<div class="col-md-8">
+				<h1 class="primary-color font-weight-bold h3">
+					<img src="{{ asset('/uploads/lessons/images/' ~ lessons.thumnail) }}" class="rounded-circle pe-1" width="150" height="150" alt="" loading="lazy"/>
+					{{lessons.name}}
+				</h1>
+				{% if lessons.program is not null %}
+					<div class=" mb-3">
+						<a href="{{path('app_programs_details', {slug: lessons.program.slug})}}" class="">{{ lessons.program.name }}</a>
+					</div>
+				{% endif %}
+				<!-- Contenu de la leçon -->
+				<div class="card mb-4">
+					<div class="card-header">
+						<h2 class="card-title mb-0">Contenu de la leçon</h2>
+					</div>
+					<div class="card-body">
+						{{ lessons.content|raw }}
+					</div>
+				</div>
+			</div>
+			<div
+				class="col-md-4">
+				<!-- Informations -->
+				<div class="card mb-4">
+					<div class="card-header">
+						<h2 class="card-title mb-0">Informations</h2>
+					</div>
+					<div class="card-body">
+						<dl class="row">
+							<dt class="col-md-4">Professeur</dt>
+							<dd class="col-md-8">
+								{% for teacher in lessons.users %}
+									{% if teacher.roles == ["ROLE_TEACHER"] %}
+										{{ teacher.firstname }}
+										{{ teacher.lastname }}
+									{% endif %}
+								{% endfor %}
+							</dd>
+							<dt class="col-md-4">Type de leçon</dt>
+							<dd class="col-md-8">
+								{% if lessons.type == 0 %}
+									Privée
+								{% else %}
+									Publique
+								{% endif %}
+							</dd>
+							<dt class="col-md-4">Créer le</dt>
+							<dd class="col-md-8">{{ lessons.createdAt|date }}</dd>
+							{% if lessons.program is not null %}
+								<dt class="col-md-4">Programme</dt>
+								<dd class="col-md-8">{{ lessons.program.name }}</dd>
+							{% endif %}
+						</dl>
+					</div>
+				</div>
+				<!-- Documents liés -->
+				<div class="card mb-4">
+					<div class="card-header">
+						<h2 class="card-title mb-0">Documents liés</h2>
+					</div>
+					<div class="card-body">
+						{% if lessons.lessonsPdfs %}
+							{% for pdf in lessons.lessonsPdfs %}
+								<a href="{{ path('app_lessons_pdf_download', {slug: lessons.slug, name: pdf.name}) }}">
+									<i class="bi bi-file-earmark-pdf text-primary"></i>
+									{{ pdf.name }}</a><br>
+							{% endfor %}
+						{% endif %}
+
+						{% if lessons.lessonsVideos is not empty %}
+							<a href="">
+								<i class="bi bi-camera-video-fill text-primary"></i>
+								Voir la vidéo</a><br>
+						{% endif %}
+						{% if lessons.lessonsAudios is not empty %}
+							<a href="">
+								<i class="bi bi-volume-up-fill text-primary"></i>
+								Écouter l'audio</a>
+						{% endif %}
+						{% if not (lessons.lessonsPdfs or lessons.lessonsVideos or lessons.lessonsAudios) %}
+							Aucun document relié à cette leçon. Pour tout problème, veuillez contacter votre professeur ou l'administration.
+						{% endif %}
+					</div>
+				</div>
+			</div>
+		</div>
+	</section>
+
+
+{% endblock %}
+

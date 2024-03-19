@@ -1,0 +1,164 @@
+{% extends 'base.html.twig' %}
+
+
+{% block stylesheets %}
+<link href="https://cdn.jsdelivr.net/npm/tom-select@2.0.0/dist/css/tom-select.css" rel="stylesheet">
+<script src="https://cdn.tiny.cloud/1/yoe38ufqjg37oumv691khx2lcmxcfhnk4m16imk5guzvgbmh/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
+{% endblock %}
+
+{% block title %}
+	{% if app.request.attributes.get('_route') == 'app_lessons_modify' %}
+		Modifier la leçon :
+		{{ lesson.name }}
+	{% else %}
+		Ajouter Leçon
+	{% endif %}
+{% endblock %}
+
+
+{% block body %}
+<section class="my-4">
+{% if app.request.attributes.get('_route') == 'app_lessons_modify' %}
+		<h1 class="h3 my-3">Modifier la leçon :
+			{{ lesson.name }}</h1>
+	{% else %}
+		<h1 class="h3 my-3">Ajouter une Leçon</h1>
+	{% endif %}
+
+	{{ form_start(form) }}
+
+	<div class="row mb-4">
+		<div class="col">
+			<div data-mdb-input-init class="">
+				{{ form_label(form.name) }}
+				{{ form_widget(form.name) }}
+			</div>
+		</div>
+		<div class="col">
+			<div data-mdb-input-init class="">
+				{{ form_label(form.type) }}
+				{{ form_widget(form.type) }}
+			</div>
+		</div>
+	</div>
+
+	<div data-mdb-input-init class="mb-4 select-users">
+		{{ form_label(form.users) }}
+		{{ form_widget(form.users) }}
+	</div>
+
+	<div data-mdb-input-init class="mb-4">
+		{{ form_label(form.content) }}
+		{{ form_widget(form.content) }}
+	</div>
+
+	<div class="row mb-4">
+		<div class="col">
+			<div data-mdb-input-init class="mb-4">
+				{{ form_label(form.thumnail) }}
+				{{ form_widget(form.thumnail) }}
+				{% if app.request.attributes.get('_route') == 'app_lessons_modify' %}
+					<div>
+						<img src="/uploads/lessons/images/{{lesson.thumnail}}" alt="Atempo-Education | {{ lesson.thumnail }}" height="150">
+					</div>
+				{% endif %}
+			</div>
+		</div>
+		<div class="col">
+			<div data-mdb-input-init class="mb-4">
+				{{ form_label(form.program) }}
+				{{ form_widget(form.program) }}
+			</div>
+		</div>
+	</div>
+
+	<div data-mdb-input-init class="mb-4">
+		{{ form_label(form.pdf) }}
+		{{ form_widget(form.pdf) }}
+		{% if app.request.attributes.get('_route') == 'app_lessons_modify' %}
+			{% for pdf in lesson.lessonsPdfs %}
+				<a href="{{path('app_lessons_pdf_download', {slug: lesson.slug, name: pdf.name})}}"> {{ pdf.link }}</a>
+			{% endfor %}
+		{% endif %}
+	</div>
+
+
+	<div class="row mb-4">
+		<div class="col">
+			<div data-mdb-input-init class="mb-4">
+				{{ form_label(form.audio) }}
+				{{ form_widget(form.audio) }}
+				{% if app.request.attributes.get('_route') == 'app_lessons_modify' %}
+					{% for audio in lesson.lessonsAudios %}
+						{{ audio.link }}
+					{% endfor %}
+				{% endif %}
+			</div>
+		</div>
+		<div class="col">
+			<div data-mdb-input-init class="mb-4">
+				{{ form_label(form.video) }}
+				{{ form_widget(form.video) }}
+				{% if app.request.attributes.get('_route') == 'app_lessons_modify' %}
+					{% for video in lesson.lessonsVideos %}
+						{{ audio.link }}
+					{% endfor %}
+				{% endif %}
+			</div>
+		</div>
+	</div>
+	{% if app.request.attributes.get('_route') == 'app_lessons_modify' %}
+	<button type="submit" class="btn primary-custom-button">Modifier la leçon</button>
+	{% else %}
+	<button type="submit" class="btn primary-custom-button">Créer la leçon</button>
+	{% endif %}
+
+
+	
+	<a href="{{ path('app_lessons_home') }}" class="btn secondary-custom-button float-end">Retour aux leçons</a>
+
+	{{ form_end(form) }}
+
+</section>
+{% endblock %}
+
+{% block javascripts %}
+<script src="https://cdn.jsdelivr.net/npm/tom-select@2.0.0/dist/js/tom-select.complete.min.js"></script>
+	<script>
+        let Camoufle = document.querySelector("#lessons_users");
+        let ParentCamoufle = Camoufle.parentElement;
+        ParentCamoufle.classList.add('d-none');
+
+        window.onload = () => {
+			function bindSelect (select) {
+				new TomSelect(select, {
+					hideSelected: true,
+					closeAfterSelect: true,
+					maxOptions: 20,
+					plugins: {
+						remove_button: {
+							title: 'Supprimer l\'utilisateur'
+						}
+					}
+				})
+			}
+			Array.from(document.querySelectorAll('select[multiple]')).map(bindSelect)
+            // On va chercher le type de lecons
+            let TypesLecons = document.querySelector("#lessons_type");
+
+            TypesLecons.addEventListener("change", function () {
+                let form = this.closest("form");
+                let data = this.name + "=" + this.value;
+                if (data !== 'lessons[type]=0') {
+                    ParentCamoufle.classList.add('d-none');
+                } else {
+                    ParentCamoufle.classList.remove('d-none');
+                }
+            });
+			tinymce.init({
+				selector: 'textarea',
+			});
+        }
+    </script>
+{% endblock %}
+

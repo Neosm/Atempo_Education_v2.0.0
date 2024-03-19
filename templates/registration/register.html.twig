@@ -1,0 +1,130 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Inscrire un utilisateur
+{% endblock %}
+
+{% block body %}
+	<h1>Inscrire</h1>
+
+
+	{{ form_errors(registrationForm) }}
+
+	{{ form_start(registrationForm) }}
+
+	<div class="row pt-4">
+		<div class="col-md-6 mb-4">
+
+			<div class="form-outline">
+				{{ form_widget(registrationForm.firstname) }}
+				{{ form_label(registrationForm.firstname) }}
+			</div>
+
+		</div>
+		<div class="col-md-6 mb-4">
+
+			<div class="form-outline">
+
+				{{ form_widget(registrationForm.lastname) }}
+				{{ form_label(registrationForm.lastname) }}
+			</div>
+
+		</div>
+	</div>
+
+	<div class="row">
+		<div class="col-md-6 mb-4 pb-2">
+
+			<div class="form-outline">
+				{{ form_widget(registrationForm.email) }}
+				{{ form_label(registrationForm.email) }}
+			</div>
+
+		</div>
+		<div class="col-md-6 mb-4 pb-2">
+
+			<div class="form-outline">
+				{{ form_widget(registrationForm.phone_number) }}
+				{{ form_label(registrationForm.phone_number) }}
+			</div>
+
+		</div>
+	</div>
+
+	<div class="row">
+		<div class="col-md-6 mb-4 pb-2">
+
+			<div class="form-outline">
+				{{ form_widget(registrationForm.area_code) }}
+				{{ form_label(registrationForm.area_code) }}
+			</div>
+
+		</div>
+		<div class="col-md-6 mb-4 pb-2">
+
+			<div class="form-outline">
+				{{ form_widget(registrationForm.address) }}
+				{{ form_label(registrationForm.address) }}
+			</div>
+
+		</div>
+	</div>
+
+	<div class="row">
+		<div class="col-md-6 mb-4 pb-2">
+
+			<div class="form-outline">
+				{{ form_widget(registrationForm.zip_code) }}
+				{{ form_label(registrationForm.zip_code) }}
+			</div>
+
+		</div>
+		<div class="col-md-6 mb-4 pb-2">
+
+			<div class="form-outline">
+				{{ form_widget(registrationForm.city) }}
+				{{ form_label(registrationForm.city) }}
+			</div>
+
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-md-6 mb-4 pb-2">
+
+			<div class="form-outline">
+				{{ form_label(registrationForm.date_of_birth) }}
+				{{ form_widget(registrationForm.date_of_birth) }}
+			</div>
+
+		</div>
+		<div class="col-md-6 mb-4 pb-2">
+
+			<div class="form-outline">
+				{{ form_label(registrationForm.thumbnail) }}
+				{{ form_widget(registrationForm.thumbnail) }}
+			</div>
+
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-md-6 mb-4 pb-2">
+
+			<div class="form-outline">
+				{{ form_label(registrationForm.roles) }}
+				{{ form_widget(registrationForm.roles) }}
+			</div>
+
+		</div>
+		<div class="col-md-6 mb-4 pb-2">
+
+			<div class="form-outline">
+				{{ form_widget(registrationForm.password) }}
+				{{ form_label(registrationForm.password) }}
+			</div>
+
+		</div>
+	</div>
+
+	<button type="submit" class="btn btn-primary">Inscrire</button>
+	{{ form_end(registrationForm) }}
+{% endblock %}
+

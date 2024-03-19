@@ -1,0 +1,181 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}
+    {{ user.name }}
+{% endblock %}
+
+{% block content %}
+    {% set today = "now"|date("Y-m-d H:i", 'Europe/Paris') %}
+    {% set nextEvents = [] %}
+    {% if is_granted('ROLE_TEACHER') %}
+        {% for event in app.user.eventsteacher %}
+            {% if event.start|date("Y-m-d H:i") >= today %}
+                {% set nextEvents = nextEvents|merge([event]) %}
+            {% endif %}
+        {% endfor %}
+        {% if app.user.studentClass is not null %}
+            {% for event in app.user.studentClass.events %}
+                {% if event.start|date("Y-m-d H:i") >= today %}
+                    {% set nextEvents = nextEvents|merge([event]) %}
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+    {% endif %}
+
+    <a href="{{ path('student_home') }}" class="btn custom-rounded-button flex-fill mr-2 p-2 m-5 mt-2">
+        <i class="bi bi-arrow-left"></i>
+        Retour aux élèves
+    </a>
+    <div class="card rounded-15px border-0 m-4 card-shadow mt-0">
+        <div class="card-body rounded-5">
+            <div class="row">
+                <div class="col-lg-4">
+                    <div class="card mb-4 border-0">
+                        <div class="card-body text-center">
+                            <img src="{{ asset('/uploads/profile_pics/' ~ user.thumbnail)|imagine_filter('square') }}" alt="avatar" class="rounded-circle img-fluid" style="width: 150px;">
+                            <h5 class="my-3">{{ user.name }}</h5>
+                            <p class="text-muted mb-1">{{ user.studentClass }}</p>
+                            <div class="d-flex justify-content-center mb-2">
+                                <button type="button" class="btn btn-outline-primary ms-1">Message</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card mb-4 mb-lg-0 border-0">
+                        <div class="card-body p-0">
+                            <ul class="list-group list-group-flush rounded-3">
+                                <li class="list-group-item d-flex justify-content-between align-items-center p-3">
+                                    <p class="mb-0">Age</p>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between align-items-center p-3">
+                                    <p class="mb-0">Date de naissance</p>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between align-items-center p-3">
+                                    <p class="mb-0">Compositeur / Artiste préféré</p>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between align-items-center p-3">
+                                    <p class="mb-0">Musique préféré</p>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between align-items-center p-3">
+                                    <p class="mb-0">Loisir</p>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-8">
+                    <div class="card mb-4 border-0 rounded-3">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-sm-3">
+                                    <p class="mb-0">Nom complet</p>
+                                </div>
+                                <div class="col-sm-9">
+                                    <p class="text-muted mb-0">{{ user.name }}</p>
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="row">
+                                <div class="col-sm-3">
+                                    <p class="mb-0">Email</p>
+                                </div>
+                                <div class="col-sm-9">
+                                    <p class="text-muted mb-0">{{ user.email }}</p>
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="row">
+                                <div class="col-sm-3">
+                                    <p class="mb-0">Téléphone</p>
+                                </div>
+                                <div class="col-sm-9">
+                                    <p class="text-muted mb-0">{{ user.telephone }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card mb-4 mb-md-0 border-0">
+                                <div class="card-body">
+                                    <p class="mb-4 text-center text-uppercase primary-color fw-bold">
+                                        Prochains cours
+                                    </p>
+                                    {% set combinedEvents = user.events|merge(user.studentClass.events) %}
+                                    {% set combinedEventsSorted = combinedEvents|sort((a, b) => a.start <=> b.start)|slice(0, 3) %}
+                                    {% if combinedEventsSorted|length > 0 %}
+                                        {% for event in combinedEventsSorted %}
+                                            <a href="{{ path('agenda_event_details',{id: event.id}) }}" class="">
+                                                <div class="card mb-3 backgound-event-colored-secondary" style="border-radius: 15px;">
+                                                    <div class="card-body p-4">
+                                                        <h3 class="mb-2 h4">{{ event.title }}</h3>
+                                                        <h5 class="mb-1 h6">Professeur : {{ event.teacher }}</h5>
+                                                        <p class="small mb-0"> {{ event.start|format_datetime(pattern="eeee d MMM à HH'h'mm") }} <span class="mx-2">|</span>
+                                                            {% if event.room is not null %}
+                                                                Salle : {{ event.room.name }}
+                                                            {% elseif event.zoomlink is not null %}
+                                                                A distanciel
+                                                            {% endif %}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </a>
+                                        {% endfor %}
+                                    {% else %}
+                                        Aucun prochain cours pour le moment. Revenez plus tard.
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card mb-4 mb-md-0 border-0">
+                                <div class="card-body">
+                                    <p class="mb-4 text-center text-uppercase primary-color fw-bold">
+                                        Leçons partagées
+                                    </p>
+                                    {% if user.lecons is not empty %}
+                                        {% for lesson in user.lecons|sort((a, b) => b.id <=> a.id) %}
+                                            {% if lesson.ProgrammesLecons.name == "Privée" and app.user in lesson.users %}
+                                            <a href="{{ path('lecons_details',{slug: lesson.slug}) }}" class="">
+                                                <div class="card mb-3 backgound-event-colored-primary" style="border-radius: 15px;">
+                                                    <div class="card-body p-4">
+                                                        <h3 class="mb-2 h4">{{ lesson.nom }}</h3>
+                                                        <h5 class="mb-1 h6">{{ lesson.programmes }}</h5>
+                                                    </div>
+                                                </div>
+                                            </a>
+                                            {% endif %}
+                                        {% endfor %}
+                                    {% else %}
+                                        Aucune leçon pour le moment. Revenez plus tard.
+                                    {% endif %}
+
+                                </div>
+                                <div class="card-body">
+                                    <p class="mb-4 text-center text-uppercase primary-color fw-bold">
+                                        Programmes partagés
+                                    </p>
+                                    {% if user.programmes is not empty %}
+                                        {% for program in user.programmes|sort((a, b) => b.id <=> a.id) %}
+                                            {% if program.ProgrammesLecons.name == "Privée" and app.user in program.users %}
+                                            <a href="{{ path('programmes_details',{slug: program.slug}) }}" class="">
+                                                <div class="card mb-3 backgound-event-colored-primary" style="border-radius: 15px;">
+                                                    <div class="card-body p-4">
+                                                        <h3 class="mb-2 h4">{{ program.nom }}</h3>
+                                                    </div>
+                                                </div>
+                                            </a>
+                                            {% endif %}
+                                        {% endfor %}
+                                    {% else %}
+                                        Aucune leçon pour le moment. Revenez plus tard.
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
