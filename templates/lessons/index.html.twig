@@ -133,7 +133,7 @@
 						{% set nextEvents = nextEvents|sort((a, b) => a.start <=> b.start)|slice(0, 3) %}
 						{% if nextEvents|length > 0 %}
 							{% for event in nextEvents %}
-								<a href="{{ path('app_calendar_details',{id: event.id}) }}" style="color: {{ event.textcolor }}!important" class="">
+								<a href="{{ path('app_calendar_courses_details',{id: event.id}) }}" style="color: {{ event.textcolor }}!important" class="">
 									<div class="card mb-3" style="border-radius: 25px;">
 										<div class="card-body p-4" style= "border-radius: 25px; background: {{ event.backgroundcolor }}!important">
 											<h3 class="mb-3 h4"  style="border-radius: 15px; color: {{ event.textcolor }}!important">{{ event.name }}</h3>

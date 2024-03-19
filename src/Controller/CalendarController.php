@@ -70,7 +70,7 @@ class CalendarController extends AbstractController
         ]);
     }
 
-    #[Route('/agenda/details-evenements', name: 'app_calendar_details_event', methods:"POST")]
+    #[Route('/agenda/details-evenements', name: 'app_calendar_courses_details_event', methods:"POST")]
     public function getEventDetails(Request $request, CoursesRepository $coursesRepository): Response
     {
         $eventId = $request->request->get('eventId');
@@ -138,7 +138,7 @@ class CalendarController extends AbstractController
         return new JsonResponse(['event' => $eventData]);
     }
 
-    #[Route('/agenda/creer', name: 'app_calendar_add')]
+    #[Route('/agenda/creer', name: 'app_calendar_courses_add')]
     public function add(Request $request, EntityManagerInterface $entityManager): Response
     {
         $event = new Courses();
@@ -161,7 +161,7 @@ class CalendarController extends AbstractController
             $last = 1;
             $event->setSchool($ecole);
 
-            if ($studentClassData) {
+            if ($numberOfStudentsClasses !==0) {
                 foreach ($studentClassData as $studentClass) {
                     $title .= $studentClass->getName();
                     if (!$last === $numberOfStudentsClasses) {
@@ -171,14 +171,12 @@ class CalendarController extends AbstractController
                 }
             } elseif ($numberOfStudents > 0) {
                 $title .= $studentsData[0];
-
                 if ($numberOfStudents > 1) {
                     $title .= ', ';
-
                     if ($numberOfStudents > 2) {
-                        $title .= $studentsData[1] . ', ...';
+                        $title .=  $studentsData[0] . ', ...';
                     } else {
-                        $title .= $studentsData[1];
+                        $title .=  $studentsData[0];
                     }
                 }
             }
@@ -198,7 +196,6 @@ class CalendarController extends AbstractController
             $recurrenceEnd = $form->get('recurrence_end')->getData();
             $recurrenceFrequency = $form->get('recurrence_frequency')->getData();
             // Si la récurrence est activée
-            dump($recurrenceEnd);
         
             if ($recurrence === true && $recurrenceEnd) {
                 // Créez les événements récurrents
@@ -263,7 +260,7 @@ class CalendarController extends AbstractController
         return $recurringEvent;
     }
 
-    #[Route('/agenda/{id}/supprimer/', name: 'app_calendar_delete')]
+    #[Route('/agenda/{id}/supprimer/', name: 'app_calendar_courses_delete')]
     public function delete(Courses $courses, EntityManagerInterface $entityManager): Response
     {
         if ($courses->isRecurrence() == 1) {
@@ -307,7 +304,7 @@ class CalendarController extends AbstractController
         return $this->redirectToRoute('app_calendar_home');
     }
 
-    #[Route('/agenda/{id}/supprimer/tous-les-cours', name: 'app_calendar_delete_all_courses')]
+    #[Route('/agenda/{id}/supprimer/tous-les-cours', name: 'app_calendar_courses_delete_all_courses')]
     public function deleteAllCourses(Courses $courses, EntityManagerInterface $entityManager): Response
     {
         // Initialiser un tableau d'identifiants d'événements à modifier
@@ -359,7 +356,7 @@ class CalendarController extends AbstractController
         return $this->redirectToRoute('app_calendar_home');
     }
 
-    #[Route('/agenda/{id}/supprimer/cours-futur', name: 'app_calendar_delete_future_courses')]
+    #[Route('/agenda/{id}/supprimer/cours-futur', name: 'app_calendar_courses_delete_future_courses')]
     public function deleteFuturEvent(Courses $courses, EntityManagerInterface $entityManager): Response
     {
         // Initialiser un tableau d'identifiants d'événements à modifier
@@ -423,7 +420,7 @@ class CalendarController extends AbstractController
         return $this->redirectToRoute('app_calendar_home');
     }
 
-    #[Route('/agenda/{id}/modifier', name: 'app_calendar_modify')]
+    #[Route('/agenda/{id}/modifier', name: 'app_calendar_courses_modify')]
     public function modify(Courses $courses,Request $request, EntityManagerInterface $entityManager): Response
     {
         // Sauvegardez l'heure de début d'origine
@@ -494,7 +491,7 @@ class CalendarController extends AbstractController
                         if ($courses->isRecurrence() == 1) {
                             // Récupérez tous les événements ayant le même parentEvent
                             $eventsToModify = $entityManager->getRepository(Courses::class)->createQueryBuilder('e')
-                                ->where('e.parentEvent = :parentEvent')
+                                ->where('e.parent = :parentEvent')
                                 ->andWhere('e.id != :eventId') // Excluez l'événement actuel
                                 ->setParameter('parentEvent', $courses)
                                 ->setParameter('eventId', $courses->getId())
@@ -507,7 +504,7 @@ class CalendarController extends AbstractController
                         } elseif ($courses->getParent() !== null) {
                             // Récupérez tous les événements ayant le même parentEvent ou l'ID du parentEvent
                             $eventsToModify = $entityManager->getRepository(Courses::class)->createQueryBuilder('e')
-                                ->where('e.parentEvent = :parentEvent OR (e.id = :parentId AND e.id != :eventId)') // Excluez l'événement actuel
+                                ->where('e.parent = :parentEvent OR (e.id = :parentId AND e.id != :eventId)') // Excluez l'événement actuel
                                 ->setParameter('parentEvent', $courses->getParent())
                                 ->setParameter('parentId', $courses->getParent()->getId())
                                 ->setParameter('eventId', $courses->getId())
@@ -546,10 +543,9 @@ class CalendarController extends AbstractController
                                 $eventToModify->setTeacher($form->get('teacher')->getData());
                                 $eventToModify->setDiscipline($form->get('discipline')->getData());
                                 $eventToModify->setDuration($form->get('duration')->getData());
-                                $eventToModify->setZoomLink($form->get('zoom_link')->getData());
                                 // Code pour gérer la modification des relations de programme
                                 $newProgrammes = $form->get('programs')->getData();
-                                $currentProgrammes = $eventToModify->getProgramme();
+                                $currentProgrammes = $eventToModify->getPrograms();
                                 
                                 // Supprimez les programmes qui ne sont plus sélectionnés
                                 foreach ($currentProgrammes as $programme) {
@@ -566,7 +562,7 @@ class CalendarController extends AbstractController
                                 }
                                 // Code pour gérer la modification des relations "lecons"
                                 $newLecons = $form->get('lessons')->getData();
-                                $currentLecons = $eventToModify->getLecons();
+                                $currentLecons = $eventToModify->getLessons();
 
                                 // Supprimez les leçons qui ne sont plus sélectionnées
                                 foreach ($currentLecons as $lecon) {
@@ -578,12 +574,13 @@ class CalendarController extends AbstractController
                                 // Ajoutez les nouvelles leçons
                                 foreach ($newLecons as $lecon) {
                                     if (!$currentLecons->contains($lecon)) {
-                                        $eventToModify->addLecon($lecon);
+                                        $eventToModify->addLesson($lecon);
                                     }
                                 }
 
                                 // Code pour gérer la modification des relations "students"
-                                $studentClass = $form->get('studentClasses')->getData();
+                                $newStudentClasses = $form->get('studentClasses')->getData();
+                                $currentstudentClasses = $eventToModify->getStudents();
                                 $newStudents = $form->get('students')->getData();
                                 $currentStudents = $eventToModify->getStudents();
 
@@ -593,16 +590,25 @@ class CalendarController extends AbstractController
                                         $eventToModify->removeStudent($student);
                                     }
                                 }
-
                                 // Ajoutez les nouveaux étudiants
                                 foreach ($newStudents as $student) {
                                     if (!$currentStudents->contains($student)) {
                                         $eventToModify->addStudent($student);
                                     }
                                 }
-
                                 // Mettez à jour la classe d'étudiant
-                                $eventToModify->setStudentClass($studentClass);
+                                // Supprimez les étudiants qui ne sont plus sélectionnés
+                                foreach ($currentstudentClasses as $studentclasses) {
+                                    if (!$newStudentClasses->contains($studentclasses)) {
+                                        $eventToModify->removeStudentClasses($studentclasses);
+                                    }
+                                }
+                                // Ajoutez les nouveaux étudiants
+                                foreach ($newStudentClasses as $studentclasses) {
+                                    if (!$currentstudentClasses->contains($studentclasses)) {
+                                        $eventToModify->addStudentClass($studentclasses);
+                                    }
+                                }
 
                                 $title = $form->get('discipline')->getData() . ' - ';
                                 $studentClassData = $form->get('studentClasses')->getData();
@@ -633,7 +639,7 @@ class CalendarController extends AbstractController
                                         }
                                     }
                                 }
-                                $eventToModify->setTitle($title);
+                                $eventToModify->setName($title);
                                 
 
                                 $duration = $courses->getDuration();
@@ -656,7 +662,7 @@ class CalendarController extends AbstractController
                         if ($courses->isRecurrence() == 1) {
                             // Récupérez tous les événements ayant le même parentEvent
                             $eventsToModify = $entityManager->getRepository(Courses::class)->createQueryBuilder('e')
-                                ->where('e.parentEvent = :parentEvent')
+                                ->where('e.parent = :parentEvent')
                                 ->andWhere('e.id != :eventId') // Excluez l'événement actuel
                                 ->setParameter('parentEvent', $courses)
                                 ->setParameter('eventId', $courses->getId())
@@ -675,7 +681,7 @@ class CalendarController extends AbstractController
                         } elseif ($courses->getParent() !== null) {
                             // Récupérez tous les événements ayant le même parentEvent ou l'ID du parentEvent
                             $eventsToModify = $entityManager->getRepository(Courses::class)->createQueryBuilder('e')
-                                ->where('e.parentEvent = :parentEvent OR (e.id = :parentId AND e.id != :eventId)') // Excluez l'événement actuel
+                                ->where('e.parent = :parentEvent OR (e.id = :parentId AND e.id != :eventId)') // Excluez l'événement actuel
                                 ->setParameter('parentEvent', $courses->getParent())
                                 ->setParameter('parentId', $courses->getParent()->getId())
                                 ->setParameter('eventId', $courses->getId())
@@ -832,7 +838,7 @@ class CalendarController extends AbstractController
 
             $this->addFlash('success', 'L\'événement a été modifié avec succès.');
 
-            return $this->redirectToRoute('app_calendar_details', ['id' => $courses->getId()]);
+            return $this->redirectToRoute('app_calendar_courses_details', ['id' => $courses->getId()]);
         }
 
         return $this->render('calendar/form.html.twig', [
@@ -841,7 +847,7 @@ class CalendarController extends AbstractController
         ]);
     }
 
-    #[Route('/agenda/cours/{id}', name: 'app_calendar_details')]
+    #[Route('/agenda/cours/{id}', name: 'app_calendar_courses_details')]
     public function details(Courses $courses): Response
     {
         if ($courses->isRecurrence() == 1 || $courses->getParent() !== null) {
@@ -856,7 +862,7 @@ class CalendarController extends AbstractController
         ]);
     }
 
-    #[Route('/agenda/export/telecharger', name: 'app_calendar_download')]
+    #[Route('/agenda/export/telecharger', name: 'app_calendar_courses_download')]
     public function download(CoursesRepository $coursesRepository): Response
     {
         $user = $this->getUser();

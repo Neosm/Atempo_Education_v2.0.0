@@ -28,9 +28,9 @@
 {% block body %}
 <section class="mt-5">
     {% if is_granted('ROLE_TEACHER') %}
-        <a href="{{ path('app_calendar_add') }}" class="btn primary-custom-button float-end ms-1 mt-n1 mt-5"><i class="bi bi-plus"></i> Ajouter un évènement</a>
+        <a href="{{ path('app_calendar_courses_add') }}" class="btn primary-custom-button float-end ms-1 mt-n1 mt-5"><i class="bi bi-plus"></i> Ajouter un évènement</a>
     {% endif %}
-    <a href="{{ path('app_calendar_download') }}" class="btn secondary-custom-button float-end me-1 mt-n1"><i class="bi bi-download"></i> Télécharger le calendrier</a>
+    <a href="{{ path('app_calendar_courses_download') }}" class="btn secondary-custom-button float-end me-1 mt-n1"><i class="bi bi-download"></i> Télécharger le calendrier</a>
 
     <h1 class="h3 mb-3">Agenda</h1>
 </section>
@@ -169,7 +169,7 @@
                 eventClick: function(info) {
                     var eventId = info.event.id;
                     $.ajax({
-                        url: '{{ path('app_calendar_details_event') }}',
+                        url: '{{ path('app_calendar_courses_details_event') }}',
                         type: 'POST',
                         data: { eventId: eventId },
                         dataType: 'json',
@@ -285,7 +285,7 @@
         $(document).on('click', '.edit-event', function(e) {
             e.preventDefault();
             var eventId = $(this).attr('data-event-id');
-            var editUrl = '{{ path('app_calendar_modify', {'id': 'eventId'}) }}';
+            var editUrl = '{{ path('app_calendar_courses_modify', {'id': 'eventId'}) }}';
             editUrl = editUrl.replace('eventId', eventId);
             window.location.assign(editUrl);
         });
@@ -301,13 +301,13 @@
 
                 if (selectedScope === 'this_event') {
                     // Suppression de l'événement actuel
-                    var deleteUrl = '{{ path('app_calendar_delete', {'id': 'eventId'}) }}';
+                    var deleteUrl = '{{ path('app_calendar_courses_delete', {'id': 'eventId'}) }}';
                 } else if (selectedScope === 'all_events') {
                     // Suppression de tous les événements
-                    var deleteUrl = '{{ path('app_calendar_delete_all_courses', {'id': 'eventId'}) }}';
+                    var deleteUrl = '{{ path('app_calendar_courses_delete_all_courses', {'id': 'eventId'}) }}';
                 } else if (selectedScope === 'future_events') {
                     // Suppression des événements futurs uniquement
-                    var deleteUrl = '{{ path('app_calendar_delete_future_courses', {'id': 'eventId'}) }}';
+                    var deleteUrl = '{{ path('app_calendar_courses_delete_future_courses', {'id': 'eventId'}) }}';
                 } else {
                     // Valeur de scope non reconnue
                     console.error('Valeur de scope non reconnue : ' + selectedScope);
@@ -315,7 +315,7 @@
                 }
             } else {
                 // Le formulaire de scope n'est pas visible, nous utilisons le chemin de suppression classique
-                var deleteUrl = '{{ path('app_calendar_delete', {'id': 'eventId'}) }}';
+                var deleteUrl = '{{ path('app_calendar_courses_delete', {'id': 'eventId'}) }}';
             }
 
             // Remplacer 'eventId' dans l'URL de suppression par l'ID de l'événement
