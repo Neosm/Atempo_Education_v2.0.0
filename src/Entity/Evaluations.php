@@ -22,16 +22,16 @@ class Evaluations
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private ?\DateTimeInterface $start = null;
 
-    #[ORM\Column]
-    private ?\DateInterval $duration = null;
+    #[ORM\Column(type: 'integer')]
+    private $duration = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private ?\DateTimeInterface $end = null;
 
-    #[ORM\Column(type: Types::TEXT)]
+    #[ORM\Column(type: Types::TEXT, nullable:true)]
     private ?string $comment = null;
 
-    #[ORM\Column(type: Types::TEXT)]
+    #[ORM\Column(type: Types::TEXT, nullable:true)]
     private ?string $objective = null;
 
     #[ORM\Column(length: 255)]
@@ -55,7 +55,7 @@ class Evaluations
     #[ORM\ManyToMany(targetEntity: Users::class, inversedBy: 'evaluations')]
     private Collection $students;
 
-    #[ORM\ManyToOne(inversedBy: 'evaluations')]
+    #[ORM\ManyToOne(inversedBy: 'evaluationsteacher')]
     private ?Users $teacher = null;
 
     #[ORM\Column(length: 7)]
@@ -73,6 +73,15 @@ class Evaluations
     #[ORM\OneToMany(targetEntity: Ratings::class, mappedBy: 'evaluation')]
     private Collection $ratings;
 
+    #[ORM\ManyToMany(targetEntity: StudentClasses::class, inversedBy: 'evaluations')]
+    private Collection $studentclasses;
+
+    #[ORM\ManyToOne(inversedBy: 'evaluations')]
+    private ?Rooms $room = null;
+
+    #[ORM\Column(length: 255)]
+    private ?string $name = null;
+
     public function __construct()
     {
         $this->lesson = new ArrayCollection();
@@ -81,6 +90,7 @@ class Evaluations
         $this->absences = new ArrayCollection();
         $this->delays = new ArrayCollection();
         $this->ratings = new ArrayCollection();
+        $this->studentclasses = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -112,12 +122,12 @@ class Evaluations
         return $this;
     }
 
-    public function getDuration(): ?\DateInterval
+    public function getDuration(): ?int
     {
         return $this->duration;
     }
 
-    public function setDuration(\DateInterval $duration): static
+    public function setDuration(int $duration): static
     {
         $this->duration = $duration;
 
@@ -402,6 +412,54 @@ class Evaluations
                 $rating->setEvaluation(null);
             }
         }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, StudentClasses>
+     */
+    public function getStudentclasses(): Collection
+    {
+        return $this->studentclasses;
+    }
+
+    public function addStudentclass(StudentClasses $studentclass): static
+    {
+        if (!$this->studentclasses->contains($studentclass)) {
+            $this->studentclasses->add($studentclass);
+        }
+
+        return $this;
+    }
+
+    public function removeStudentclass(StudentClasses $studentclass): static
+    {
+        $this->studentclasses->removeElement($studentclass);
+
+        return $this;
+    }
+
+    public function getRoom(): ?Rooms
+    {
+        return $this->room;
+    }
+
+    public function setRoom(?Rooms $room): static
+    {
+        $this->room = $room;
+
+        return $this;
+    }
+
+    public function getName(): ?string
+    {
+        return $this->name;
+    }
+
+    public function setName(string $name): static
+    {
+        $this->name = $name;
 
         return $this;
     }

@@ -63,8 +63,8 @@ class ProgramsType extends AbstractType
             ->add('type', ChoiceType::class, [
                 'label' => 'Programme privé ou public',
                 'choices'  => [
-                    'Public' => true,
-                    'Privé' => false,
+                    'Public' => '1',
+                    'Privé' => '0',
                 ],
                 'attr' => [
                     'class' => 'form-control'

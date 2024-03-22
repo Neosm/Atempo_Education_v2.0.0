@@ -1,0 +1,138 @@
+{% extends is_granted('ROLE_SECRETARIAT') ? 'admin.html.twig' : 'base.html.twig' %}
+
+{% block title %}Mon compte - Atempo Education{% endblock %}
+
+{% block body %}
+	{% set today = "now"|date("Y-m-d H:i", 'Europe/Paris') %}
+	{% set nextEvents = [] %}
+
+	{% if not is_granted('ROLE_TEACHER') %}
+		{% for event in app.user.courses %}
+			{% if event.start|date("Y-m-d H:i") >= today %}
+				{% set nextEvents = nextEvents|merge([event]) %}
+			{% endif %}
+		{% endfor %}
+		{% for event in app.user.events %}
+			{% if event.start|date("Y-m-d H:i") >= today %}
+				{% set nextEvents = nextEvents|merge([event]) %}
+			{% endif %}
+		{% endfor %}
+		{% for event in app.user.evaluations %}
+			{% if event.start|date("Y-m-d H:i") >= today %}
+				{% set nextEvents = nextEvents|merge([event]) %}
+			{% endif %}
+		{% endfor %}
+		{% if app.user.studentClasses is not null %}
+			{% for studentClass in app.user.studentClasses %}
+				{% for event in studentClass.courses %}
+					{% if event.start|date("Y-m-d H:i") >= today %}
+						{% set nextEvents = nextEvents|merge([event]) %}
+					{% endif %}
+				{% endfor %}
+			{% endfor %}
+		{% endif %}
+	{% elseif is_granted('ROLE_TEACHER') %}
+		{% for event in app.user.coursesteacher %}
+			{% if event.start|date("Y-m-d H:i") >= today %}
+				{% set nextEvents = nextEvents|merge([event]) %}
+			{% endif %}
+		{% endfor %}
+		{% for event in app.user.events %}
+			{% if event.start|date("Y-m-d H:i") >= today %}
+				{% set nextEvents = nextEvents|merge([event]) %}
+			{% endif %}
+		{% endfor %}
+		{% for event in app.user.evaluationsteacher %}
+			{% if event.start|date("Y-m-d H:i") >= today %}
+				{% set nextEvents = nextEvents|merge([event]) %}
+			{% endif %}
+		{% endfor %}
+		{% if app.user.studentClasses is not null %}
+			{% for studentClass in app.user.studentClasses %}
+				{% for event in studentClass.courses %}
+					{% if event.start|date("Y-m-d H:i") >= today %}
+						{% set nextEvents = nextEvents|merge([event]) %}
+					{% endif %}
+				{% endfor %}
+			{% endfor %}
+		{% endif %}
+	{% endif %}
+<div class="container">
+    <h1 class="h2 mt-5">Mon compte</h1>
+
+    <p class="h6">Bienvenue {{ app.user.firstname }} sur votre espace membre</p>
+
+    <hr class="my-4">
+
+    <div class="row">
+        <div class="col-md-4">
+            <div class="mb-3">
+                <strong>Nom:</strong> {{ app.user.lastname }} {{ app.user.firstname }}
+            </div>
+            <div class="mb-3">
+                <strong>Email:</strong> {{ app.user.email }}
+            </div>
+            <div class="mb-3">
+                <strong>Téléphone:</strong> {{ app.user.phonenumber }}
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <a href="{{ path('app_account_informations') }}" class="btn btn-primary btn-block mb-3">Modifier ses informations</a>
+            <a href="{{ path('app_account_password') }}" class="btn btn-primary btn-block">Modifier le mot de passe</a>
+        </div>
+    </div>
+
+    <hr class="my-4">
+
+    {% if not is_granted('ROLE_ADMIN') %}
+        <h2 class="h3">Mes prochains cours</h2>
+        {% if nextEvents|length > 0 %}
+            <div class="row">
+                {% for event in nextEvents %}
+                    <div class="col-md-4">
+                        <div class="card mb-3">
+                            <div class="card-body" style="background-color: {{ event.backgroundcolor }}; color: {{ event.textcolor }};">
+                                <h3 class="card-title">{{ event.name }}</h3>
+                                <p class="card-text">
+                                    {{ event.start|format_datetime(pattern="eeee d MMM à HH'h'mm") }}<br>
+                                    {% if event.room is not null %}
+                                        Salle : {{ event.room.name }}
+                                    {% elseif event.zoomlink is not null %}
+                                        A distanciel : <a href="{{ event.zoomlink }}" target="_blank" rel="noopener noreferrer">Lien Zoom</a>
+                                    {% endif %}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+            <a href="{{ path('app_calendar_home') }}" class="btn btn-primary">Voir l'Agenda</a>
+        {% else %}
+            <p>Aucun prochain cours pour le moment. Revenez plus tard.</p>
+        {% endif %}
+    {% endif %}
+
+    <hr class="my-4">
+    <h2 class="h3">Derniers articles écrits</h2>
+    {% if app.user.posts is not empty %}
+        <div class="row">
+            {% for article in app.user.posts|reverse|slice(0, 3) %}
+                <div class="col-md-4">
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <h3 class="card-title">{{ article.name }}</h3>
+                            <p class="card-text">{{ article.content|striptags|u.truncate(275, '...')|raw }}</p>
+                            {% if not is_granted('ROLE_ADMIN') %}
+                                <a href="{{ path('app_posts_details', {slug: article.slug}) }}" class="btn btn-primary">Lire plus</a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p>Aucun article écrit</p>
+    {% endif %}
+</div>
+{% endblock %}

@@ -27,10 +27,14 @@ class StudentClasses
     #[ORM\ManyToMany(targetEntity: Courses::class, mappedBy: 'studentClasses')]
     private Collection $courses;
 
+    #[ORM\ManyToMany(targetEntity: Evaluations::class, mappedBy: 'studentclasses')]
+    private Collection $evaluations;
+
     public function __construct()
     {
         $this->students = new ArrayCollection();
         $this->courses = new ArrayCollection();
+        $this->evaluations = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -114,6 +118,33 @@ class StudentClasses
     {
         if ($this->courses->removeElement($course)) {
             $course->removeStudentClass($this);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Evaluations>
+     */
+    public function getEvaluations(): Collection
+    {
+        return $this->evaluations;
+    }
+
+    public function addEvaluation(Evaluations $evaluation): static
+    {
+        if (!$this->evaluations->contains($evaluation)) {
+            $this->evaluations->add($evaluation);
+            $evaluation->addStudentclass($this);
+        }
+
+        return $this;
+    }
+
+    public function removeEvaluation(Evaluations $evaluation): static
+    {
+        if ($this->evaluations->removeElement($evaluation)) {
+            $evaluation->removeStudentclass($this);
         }
 
         return $this;

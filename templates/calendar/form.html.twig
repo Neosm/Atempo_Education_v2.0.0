@@ -143,7 +143,7 @@
     <div class="row mb-4">
         <div class="col">
             <button class="btn btn-primary">{{ button_label|default('Sauvegarder') }}</button>
-	        <a href="{{ path('app_calendar_home') }}" class="btn btn-secondary float-end">Retour à l'agenda</a>
+	        <a href="{{ path('app_calendar_home') }}" class="btn primary-custom-button float-end">Retour à l'agenda</a>
         </div>
     </div>
 </div>
@@ -291,7 +291,7 @@
 			// Récupérer la valeur du champ zoomlink
 
 			// Construire l'URL de l'API avec les paramètres appropriés
-			var apiUrl = '/agenda/api/rooms';
+			var apiUrl = '/agenda/cours/api/rooms';
 			apiUrl += '?materials=' + selectedMaterials.join(',');
 			apiUrl += '&start=' + startValue;
 			apiUrl += '&duration=' + durationValue;

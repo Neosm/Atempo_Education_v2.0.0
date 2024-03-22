@@ -3,8 +3,14 @@
 namespace App\Controller;
 
 use App\Entity\Courses;
+use App\Entity\Evaluations;
+use App\Entity\Events;
 use App\Form\CoursesType;
+use App\Form\EvaluationsType;
+use App\Form\EventsType;
 use App\Repository\CoursesRepository;
+use App\Repository\EvaluationsRepository;
+use App\Repository\EventsRepository;
 use App\Repository\RoomsRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -38,27 +44,32 @@ class CalendarController extends AbstractController
     }
 
     #[Route('/agenda', name: 'app_calendar_home')]
-    public function index(CoursesRepository $coursesRepository): Response
+    public function index(CoursesRepository $coursesRepository, EvaluationsRepository $evaluationsRepository): Response
     {
         // Récupérer l'utilisateur connecté (vous pouvez adapter cela selon votre logique d'authentification)
         $user = $this->getUser();
 
         // Récupérer les événements associés à l'utilisateur
-        $events = $coursesRepository->findEventsByUser($user);
+        $courses  = $coursesRepository->findEventsByUser($user);
+        $events = $user->getEvents()->toArray();
+        $evaluations = $evaluationsRepository->findEventsByUser($user);
+        // Combinez les données récupérées dans un seul tableau $allEvents
+        $allEvents = array_merge($courses, $events, $evaluations);
 
         // Convertir les événements en un format compatible avec FullCalendar (par exemple, JSON)
         $formattedEvents = [];
-        foreach ($events as $event) {
+        foreach ($allEvents as $event) {
             $formattedEvents[] = [
                 'title' => $event->getName(),
                 'id' => $event->getId(),
+                'uniqid' => $event->getIdUnique(),
                 'start' => $event->getStart()->format('Y-m-d H:i:s'),
                 'end' => $event->getEnd()->format('Y-m-d H:i:s'),
-                'teacher' => $event->getTeacher()->getUserIdentifier(),
-                'description' => $this->getDescription($event),
+                'teacher' => $event->getName(),
                 // Ajoutez ici d'autres champs que vous souhaitez afficher dans le calendrier
-                'color'=>$event->getTextColor(),
-                'backgroundcolor'=>$event->getBackgroundColor(),
+                'textColor'=>$event->getTextColor(),
+                'backgroundColor'=>$event->getBackgroundColor(),
+                'borderColor'=>$event->getBackgroundColor(),
             ];
         }
 
@@ -70,76 +81,132 @@ class CalendarController extends AbstractController
         ]);
     }
 
-    #[Route('/agenda/details-evenements', name: 'app_calendar_courses_details_event', methods:"POST")]
-    public function getEventDetails(Request $request, CoursesRepository $coursesRepository): Response
+    #[Route('/agenda/cours/details-evenements', name: 'app_calendar_courses_details_event', methods:"POST")]
+    public function getEventDetails(Request $request, CoursesRepository $coursesRepository, EventsRepository $eventsRepository, EvaluationsRepository $evaluationsRepository): Response
     {
         $eventId = $request->request->get('eventId');
 
         // Récupérer les informations de l'événement en fonction de son ID
-        $event = $coursesRepository->find($eventId);
-
-        // Vérifier si l'événement existe
-        if (!$event) {
-            return new JsonResponse(['error' => 'L\'événement n\'a pas été trouvé.'], 404);
-        }
-
-        $studentClasses = $event->getStudentClasses();
-
-        $students = $event->getStudents();
-        $lecons = $event->getLessons();
-        $programmes = $event->getPrograms();
-
-        if ($event->getStart() > new \DateTime & $event->getObjectives() == null) {
-            $objectif = "Aucun objectif défini pour le prochain cours";
-            $commentaire = null;
-        } elseif ($event->getStart() > new \DateTime) {
-            $objectif = $event->getObjectives();
-            $commentaire = null;
-        } elseif ($event->getStart() < new \DateTime &  $event->getComment() == null) {
-            $commentaire = "Aucun commentaire défini pour le prochain cours";
-            $objectif = null;
-        } elseif ($event->getStart() < new \DateTime) {
-            $commentaire = $event->getComment();
-            $objectif = null;
-        }
-
-        if ($event->isRecurrence() || $event->getParent() !== null) {
-            $recurrence = 'recurrence';
+        $event = $coursesRepository->findOneBy(['id_unique' => $eventId]);
+        if ($event) {
+            $studentClasses = $event->getStudentClasses();
+            $students = $event->getStudents();
+            $lecons = $event->getLessons();
+            $programmes = $event->getPrograms();
+            if ($event->getStart() > new \DateTime & $event->getObjectives() == null) {
+                $objectif = "Aucun objectif défini pour le prochain cours";
+                $commentaire = null;
+            } elseif ($event->getStart() > new \DateTime) {
+                $objectif = $event->getObjectives();
+                $commentaire = null;
+            } elseif ($event->getStart() < new \DateTime &  $event->getComment() == null) {
+                $commentaire = "Aucun commentaire défini pour le prochain cours";
+                $objectif = null;
+            } elseif ($event->getStart() < new \DateTime) {
+                $commentaire = $event->getComment();
+                $objectif = null;
+            }
+            if ($event->isRecurrence() || $event->getParent() !== null) {
+                $recurrence = 'recurrence';
+            } else {
+                $recurrence = null;
+            }
+            // Convertir l'objet Event en tableau associatif
+            $eventData = [
+                'type' => 'cours',
+                'title' => $event->getName(),
+                'id' => $event->getId(),
+                'start' => $event->getStart()->format('Y-m-d H:i:s'),
+                'end' => $event->getEnd()->format('Y-m-d H:i:s'),
+                'room' => $event->getRoom() ? $event->getRoom()->getName() : null,
+                'teacher' => $event->getTeacher()->getUserIdentifier(),
+                'studentClass' => $studentClasses->isEmpty() ? [] : $studentClasses->map(fn ($studentClass) => $studentClass->getName())->toArray(),
+                'students' => $students->isEmpty() ? [] : $students->map(fn ($student) => $student->getUserIdentifier())->toArray(),
+                'zoomlink' => $event->getZoomLink() ?? '',
+                'lecons' => $lecons->isEmpty() ? [] : $lecons->map(fn ($lecons) => [
+                    'nom' => $lecons->getName(),
+                    'slug' => $lecons->getSlug()
+                ])->toArray(),
+                'programmes' => $programmes->isEmpty() ? [] : $programmes->map(fn ($programme) => [
+                    'nom' => $programme->getName(),
+                    'slug' => $programme->getSlug()
+                ])->toArray(),
+                'objectif' => $objectif,
+                'commentaire' => $commentaire,
+                'recurrence' => $recurrence,
+                // Ajoutez ici d'autres propriétés de l'événement que vous souhaitez inclure dans la réponse JSON
+            ];    
         } else {
-            $recurrence = null;
-        }
+            $event = $eventsRepository->findOneBy(['id_unique' => $eventId]);
+            if ($event) {
+            $users = $event->getUsers();
+            $programmes = $event->getDescription();
+            // Convertir l'objet Event en tableau associatif
+            $eventData = [
+                'type' => 'event',
+                'title' => $event->getName(),
+                'id' => $event->getId(),
+                'start' => $event->getStart()->format('Y-m-d H:i:s'),
+                'end' => $event->getEnd()->format('Y-m-d H:i:s'),
+                'users' => $users->isEmpty() ? [] : $users->map(fn ($user) => $user->getUserIdentifier())->toArray(),
+                // Ajoutez ici d'autres propriétés de l'événement que vous souhaitez inclure dans la réponse JSON
+            ];
+            } else {
+                $event = $evaluationsRepository->findOneBy(['id_unique' => $eventId]);
+                if ($event) {
+                    $studentClasses = $event->getStudentClasses();
+                    $students = $event->getStudents();
+                    $lecons = $event->getLesson();
+                    $programmes = $event->getProgram();
+                    if ($event->getStart() > new \DateTime & $event->getObjective() == null) {
+                        $objectif = "Aucun objectif défini pour le prochain cours";
+                        $commentaire = null;
+                    } elseif ($event->getStart() > new \DateTime) {
+                        $objectif = $event->getObjective();
+                        $commentaire = null;
+                    } elseif ($event->getStart() < new \DateTime &  $event->getComment() == null) {
+                        $commentaire = "Aucun commentaire défini pour le prochain cours";
+                        $objectif = null;
+                    } elseif ($event->getStart() < new \DateTime) {
+                        $commentaire = $event->getComment();
+                        $objectif = null;
+                    }
+                    // Convertir l'objet Event en tableau associatif
+                    $eventData = [
+                        'type' => 'evaluation',
+                        'title' => $event->getName(),
+                        'id' => $event->getId(),
+                        'start' => $event->getStart()->format('Y-m-d H:i:s'),
+                        'end' => $event->getEnd()->format('Y-m-d H:i:s'),
+                        'room' => $event->getRoom() ? $event->getRoom()->getName() : null,
+                        'teacher' => $event->getTeacher()->getUserIdentifier(),
+                        'studentClass' => $studentClasses->isEmpty() ? [] : $studentClasses->map(fn ($studentClass) => $studentClass->getName())->toArray(),
+                        'students' => $students->isEmpty() ? [] : $students->map(fn ($student) => $student->getUserIdentifier())->toArray(),
+                        'lecons' => $lecons->isEmpty() ? [] : $lecons->map(fn ($lecons) => [
+                            'nom' => $lecons->getName(),
+                            'slug' => $lecons->getSlug()
+                        ])->toArray(),
+                        'programmes' => $programmes->isEmpty() ? [] : $programmes->map(fn ($programme) => [
+                            'nom' => $programme->getName(),
+                            'slug' => $programme->getSlug()
+                        ])->toArray(),
+                        'objectif' => $objectif,
+                        'commentaire' => $commentaire,
+                        // Ajoutez ici d'autres propriétés de l'événement que vous souhaitez inclure dans la réponse JSON
+                    ];
+                } else {
+                    return new JsonResponse(['error' => 'L\'événement n\'a pas été trouvé.'], 404);
+                }
+            }
 
-        // Convertir l'objet Event en tableau associatif
-        $eventData = [
-            'title' => $event->getName(),
-            'id' => $event->getId(),
-            'start' => $event->getStart()->format('Y-m-d H:i:s'),
-            'end' => $event->getEnd()->format('Y-m-d H:i:s'),
-            'room' => $event->getRoom() ? $event->getRoom()->getName() : null,
-            'teacher' => $event->getTeacher()->getUserIdentifier(),
-            'studentClass' => $studentClasses->isEmpty() ? [] : $studentClasses->map(fn ($studentClass) => $studentClass->getName())->toArray(),
-            'students' => $students->isEmpty() ? [] : $students->map(fn ($student) => $student->getUserIdentifier())->toArray(),
-            'zoomlink' => $event->getZoomLink() ?? '',
-            'lecons' => $lecons->isEmpty() ? [] : $lecons->map(fn ($lecons) => [
-                'nom' => $lecons->getName(),
-                'slug' => $lecons->getSlug()
-            ])->toArray(),
-            'programmes' => $programmes->isEmpty() ? [] : $programmes->map(fn ($programme) => [
-                'nom' => $programme->getName(),
-                'slug' => $programme->getSlug()
-            ])->toArray(),
-            'objectif' => $objectif,
-            'commentaire' => $commentaire,
-            'recurrence' => $recurrence,
-            // Ajoutez ici d'autres propriétés de l'événement que vous souhaitez inclure dans la réponse JSON
-        ];
+        }
 
         // Renvoyer les informations de l'événement en tant que réponse JSON
         return new JsonResponse(['event' => $eventData]);
     }
 
-    #[Route('/agenda/creer', name: 'app_calendar_courses_add')]
-    public function add(Request $request, EntityManagerInterface $entityManager): Response
+    #[Route('/agenda/cours/creer', name: 'app_calendar_courses_add')]
+    public function coursesadd(Request $request, EntityManagerInterface $entityManager): Response
     {
         $event = new Courses();
         $ecole =  $this->getUser()->getSchool();
@@ -260,8 +327,8 @@ class CalendarController extends AbstractController
         return $recurringEvent;
     }
 
-    #[Route('/agenda/{id}/supprimer/', name: 'app_calendar_courses_delete')]
-    public function delete(Courses $courses, EntityManagerInterface $entityManager): Response
+    #[Route('/agenda/cours/{id}/supprimer/', name: 'app_calendar_courses_delete')]
+    public function coursesdelete(Courses $courses, EntityManagerInterface $entityManager): Response
     {
         if ($courses->isRecurrence() == 1) {
             $getEventsRecurrence = $entityManager->getRepository(Courses::class)
@@ -304,7 +371,7 @@ class CalendarController extends AbstractController
         return $this->redirectToRoute('app_calendar_home');
     }
 
-    #[Route('/agenda/{id}/supprimer/tous-les-cours', name: 'app_calendar_courses_delete_all_courses')]
+    #[Route('/agenda/cours/{id}/supprimer/tous-les-cours', name: 'app_calendar_courses_delete_all_courses')]
     public function deleteAllCourses(Courses $courses, EntityManagerInterface $entityManager): Response
     {
         // Initialiser un tableau d'identifiants d'événements à modifier
@@ -356,8 +423,8 @@ class CalendarController extends AbstractController
         return $this->redirectToRoute('app_calendar_home');
     }
 
-    #[Route('/agenda/{id}/supprimer/cours-futur', name: 'app_calendar_courses_delete_future_courses')]
-    public function deleteFuturEvent(Courses $courses, EntityManagerInterface $entityManager): Response
+    #[Route('/agenda/cours/{id}/supprimer/cours-futur', name: 'app_calendar_courses_delete_future_courses')]
+    public function deleteFuturCourses(Courses $courses, EntityManagerInterface $entityManager): Response
     {
         // Initialiser un tableau d'identifiants d'événements à modifier
         $eventIdsToDelete = [];
@@ -420,8 +487,8 @@ class CalendarController extends AbstractController
         return $this->redirectToRoute('app_calendar_home');
     }
 
-    #[Route('/agenda/{id}/modifier', name: 'app_calendar_courses_modify')]
-    public function modify(Courses $courses,Request $request, EntityManagerInterface $entityManager): Response
+    #[Route('/agenda/cours/{id}/modifier', name: 'app_calendar_courses_modify')]
+    public function coursesmodify(Courses $courses,Request $request, EntityManagerInterface $entityManager): Response
     {
         // Sauvegardez l'heure de début d'origine
         $originalStart = $courses->getStart();
@@ -848,7 +915,7 @@ class CalendarController extends AbstractController
     }
 
     #[Route('/agenda/cours/{id}', name: 'app_calendar_courses_details')]
-    public function details(Courses $courses): Response
+    public function coursesdetails(Courses $courses): Response
     {
         if ($courses->isRecurrence() == 1 || $courses->getParent() !== null) {
             $recurrence = 'recurrence';
@@ -862,21 +929,26 @@ class CalendarController extends AbstractController
         ]);
     }
 
-    #[Route('/agenda/export/telecharger', name: 'app_calendar_courses_download')]
-    public function download(CoursesRepository $coursesRepository): Response
+    #[Route('/api/agenda/{uniqid}/export/telecharger', name: 'app_calendar_download')]
+    public function download(CoursesRepository $coursesRepository, EvaluationsRepository $evaluationsRepository): Response
     {
+        // Récupérer l'utilisateur connecté (vous pouvez adapter cela selon votre logique d'authentification)
         $user = $this->getUser();
 
         // Récupérer les événements associés à l'utilisateur
-        $events = $coursesRepository->findEventsByUser($user);
+        $courses  = $coursesRepository->findEventsByUser($user);
+        $events = $user->getEvents()->toArray();
+        $evaluations = $evaluationsRepository->findEventsByUser($user);
+        $allEvents = array_merge($courses, $evaluations, $events);
+
 
         // Calculer la date du premier et dernier événement
-        $firstEvent = reset($events);
-        $lastEvent = end($events);
+        $firstEvent = reset($allEvents );
+        $lastEvent = end($allEvents );
         $startDate = $firstEvent->getStart()->format('Ymd');
         $endDate = $lastEvent->getEnd()->format('Ymd');
         $userDateOfBirth = $user->getDateOfBirth()->format('Y-m-d');
-
+        dump($allEvents);
 
         // Générer le contenu du fichier iCalendar
         $content = "BEGIN:VCALENDAR\r\n";
@@ -887,7 +959,7 @@ class CalendarController extends AbstractController
         $content .= "X-WR-CALNAME;LANGUAGE=fr:ATempo - " . $user->getLastname() . " " . $user->getFirstname() . " - " . $userDateOfBirth . " - " . "\r\n";
         $content .= "X-WR-CALDESC;LANGUAGE=fr:Emploi du temps " . $user->getLastname() . " " . $user->getFirstname() . " - " . $userDateOfBirth . " - " . " | Généré par ATempo.Education - Semaines :"  . date('W') . " - " . $lastEvent->getEnd()->format('W') . "\r\n";
 
-        foreach ($events as $event) {
+        foreach ($allEvents as $event) {
             $content .= "BEGIN:VEVENT\r\n";
             $content .= "CATEGORIES:ATempo.Education\r\n";
             $content .= "UID:" . $event->getidUnique() . " " . $user . "\r\n";
@@ -914,9 +986,20 @@ class CalendarController extends AbstractController
 
                 // Supprimer la virgule finale
                 $description = rtrim($description, ", ") . "\\n";
+            } elseif ($event->getUsers()->count() > 0) {
+                $description .= "Participants: ";
+
+                foreach ($event->getUsers() as $user) {
+                    $description .= $user->getName() . ", ";
+                }
+
+                // Supprimer la virgule finale
+                $description = rtrim($description, ", ") . "\\n";
             }
 
-            $description .= "Professeur: " . $event->getTeacher() . "\\n";
+            if ($event->getTeacher()) {
+                $description .= "Professeur: " . $event->getTeacher() . "\\n";
+            }
             
             if ($event->getRoom() != null) {
                 $description .= "Salle: " . $event->getRoom()->getName();
@@ -924,7 +1007,7 @@ class CalendarController extends AbstractController
                 $description .= "Lien Zoom: " . $event->getZoomLink();
             }
 
-            $content .= "SUMMARY:" .  $event->getName() . " - " . $event->getTeacher() . "\r\n";
+            $content .= "SUMMARY:" .  $event->getName() . "\r\n";
             $content .= "DESCRIPTION:" . $description . "\r\n";
             $content .= "END:VEVENT\r\n";
         }
@@ -940,5 +1023,241 @@ class CalendarController extends AbstractController
         $response->headers->set('Content-Disposition', 'attachment; filename="' . $filename . '"');
 
         return $response;
+    }
+
+    #[Route('/agenda/examen/creer', name: 'app_calendar_evaluation_add')]
+    public function evaluationadd(Request $request, EntityManagerInterface $entityManager): Response
+    {
+        $event = new Evaluations();
+        $ecole =  $this->getUser()->getSchool();
+        
+
+        $form = $this->createForm(EvaluationsType::class, $event, ['ecole' => $ecole]);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            // Calculer l'heure de fin en fonction de l'heure de début et de la durée
+            $start = $form->get('start')->getData(); // Récupérer l'objet DateTime depuis le formulaire
+            $event->setStart($start);
+
+            $title = 'Examen ' . $form->get('discipline')->getData() . ' - ';
+            $studentClassData = $form->get('studentClasses')->getData();
+            $studentsData = $form->get('students')->getData();
+            $numberOfStudentsClasses = count($studentClassData);
+            $numberOfStudents = count($studentsData);
+            $last = 1;
+            $event->setSchool($ecole);
+
+            if ($numberOfStudentsClasses !==0) {
+                foreach ($studentClassData as $studentClass) {
+                    $title .= $studentClass->getName();
+                    if (!$last === $numberOfStudentsClasses) {
+                        $title .= ", ";
+                    }
+                    $last++;
+                }
+            } elseif ($numberOfStudents > 0) {
+                $title .= $studentsData[0];
+                if ($numberOfStudents > 1) {
+                    $title .= ', ';
+                    if ($numberOfStudents > 2) {
+                        $title .=  $studentsData[0] . ', ...';
+                    } else {
+                        $title .=  $studentsData[0];
+                    }
+                }
+            }
+            $event->setName($title);
+            $event->setTextColor('#FFFFFF');
+            $event->setBackgroundColor("#439492");
+            $duration = $event->getDuration();
+            $event->setIdUnique(uniqid(mt_rand(), true));
+            $end = clone $start;
+            $end->modify("+$duration minutes");
+            $event->setEnd($end);
+            // Enregistrer l'événement dans la base de données
+            $entityManager->persist($event);
+            $entityManager->flush();
+        
+            
+            $this->addFlash('success', 'L\'événement a été créé avec succès.');
+            return $this->redirectToRoute('app_calendar_home');  
+        }
+
+        return $this->render('evaluation/form.html.twig', [
+            'form' => $form->createView(),
+        ]);
+    }
+
+    #[Route('/agenda/examen/{id}/supprimer', name: 'app_calendar_evaluation_delete')]
+    public function evaluationdelete(Evaluations $evaluations, EntityManagerInterface $entityManager): Response
+    {
+
+        // Supprimer l'événement de la base de données
+        $entityManager->remove($evaluations);
+        $entityManager->flush();
+        $this->addFlash('success', 'L\'éxamen a été supprimé avec succès.');
+
+        return $this->redirectToRoute('app_calendar_home');
+    }
+
+    #[Route('/agenda/examen/{id}/modifier', name: 'app_calendar_evaluation_modify')]
+    public function evaluationmodify(Evaluations $evaluations, EntityManagerInterface $entityManager, Request $request): Response
+    {
+        $ecole =  $this->getUser()->getSchool();
+        
+
+        $form = $this->createForm(EvaluationsType::class, $evaluations, ['ecole' => $ecole]);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            // Calculer l'heure de fin en fonction de l'heure de début et de la durée
+            $start = $form->get('start')->getData(); // Récupérer l'objet DateTime depuis le formulaire
+            $evaluations->setStart($start);
+
+            $title = 'Examen ' . $form->get('discipline')->getData() . ' - ';
+            $studentClassData = $form->get('studentClasses')->getData();
+            $studentsData = $form->get('students')->getData();
+            $numberOfStudentsClasses = count($studentClassData);
+            $numberOfStudents = count($studentsData);
+            $last = 1;
+            $evaluations->setSchool($ecole);
+
+            if ($numberOfStudentsClasses !==0) {
+                foreach ($studentClassData as $studentClass) {
+                    $title .= $studentClass->getName();
+                    if (!$last === $numberOfStudentsClasses) {
+                        $title .= ", ";
+                    }
+                    $last++;
+                }
+            } elseif ($numberOfStudents > 0) {
+                $title .= $studentsData[0];
+                if ($numberOfStudents > 1) {
+                    $title .= ', ';
+                    if ($numberOfStudents > 2) {
+                        $title .=  $studentsData[0] . ', ...';
+                    } else {
+                        $title .=  $studentsData[0];
+                    }
+                }
+            }
+            $evaluations->setName($title);
+            $evaluations->setTextColor('#FFFFFF');
+            $evaluations->setBackgroundColor("#439492");
+            $duration = $evaluations->getDuration();
+            $evaluations->setIdUnique(uniqid(mt_rand(), true));
+            $end = clone $start;
+            $end->modify("+$duration minutes");
+            $evaluations->setEnd($end);
+            // Enregistrer l'événement dans la base de données
+            $entityManager->persist($evaluations);
+            $entityManager->flush();
+        
+            
+            $this->addFlash('success', 'L\'éxamen a été modifié avec succès.');
+            return $this->redirectToRoute('app_calendar_home');  
+        }
+
+        return $this->render('evaluation/form.html.twig', [
+            'form' => $form->createView(),
+        ]);
+    }
+
+    #[Route('/agenda/examen/{id}', name: 'app_calendar_evaluation_details')]
+    public function evaluationsdetails(Evaluations $evaluations): Response
+    {
+
+        return $this->render('evaluation/show.html.twig', [
+            'event' => $evaluations,
+        ]);
+    }
+
+    #[Route('/agenda/evenement/creer', name: 'app_calendar_event_add')]
+    public function eventadd(Request $request, EntityManagerInterface $entityManager): Response
+    {
+        $event = new Events();
+        $ecole =  $this->getUser()->getSchool();
+        
+
+        $form = $this->createForm(EventsType::class, $event, ['ecole' => $ecole]);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            // Calculer l'heure de fin en fonction de l'heure de début et de la durée
+            $start = $form->get('start')->getData(); // Récupérer l'objet DateTime depuis le formulaire
+            $event->setStart($start);
+            $event->setSchool($ecole);
+            $event->setIdUnique(uniqid(mt_rand(), true));
+            $event->setTextColor('#FFFFFF');
+            $event->setBackgroundColor("#E9A48B");
+            $end = $form->get('end')->getData(); // Récupérer l'objet DateTime depuis le formulaire
+            $event->setEnd($end);
+            // Enregistrer l'événement dans la base de données
+            $entityManager->persist($event);
+            $entityManager->flush();
+        
+            
+            $this->addFlash('success', 'L\'événement a été créé avec succès.');
+            return $this->redirectToRoute('app_calendar_home');  
+        }
+
+        return $this->render('event/form.html.twig', [
+            'form' => $form->createView(),
+        ]);
+    }
+
+    #[Route('/agenda/evenement/{id}/supprimer', name: 'app_calendar_event_delete')]
+    public function eventdelete(Events $event, EntityManagerInterface $entityManager): Response
+    {
+        // Supprimer l'événement de la base de données
+        $entityManager->remove($event);
+        $entityManager->flush();
+        $this->addFlash('success', 'L\'évenement a été supprimé avec succès.');
+
+        return $this->redirectToRoute('app_calendar_home');
+    }
+
+    #[Route('/agenda/evenement/{id}/modifier', name: 'app_calendar_event_modify')]
+    public function eventmodify(Events $event, EntityManagerInterface $entityManager, Request $request): Response
+    {
+        $ecole =  $this->getUser()->getSchool();
+        
+        $form = $this->createForm(EventsType::class, $event, ['ecole' => $ecole]);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            // Calculer l'heure de fin en fonction de l'heure de début et de la durée
+            $start = $form->get('start')->getData(); // Récupérer l'objet DateTime depuis le formulaire
+            $event->setStart($start);
+
+            $event->setSchool($ecole);
+
+            
+            $event->setTextColor('#FFFFFF');
+            $event->setBackgroundColor("#E9A48B");
+            $end = $form->get('end')->getData(); // Récupérer l'objet DateTime depuis le formulaire
+            $event->setEnd($end);
+            // Enregistrer l'événement dans la base de données
+            $entityManager->persist($event);
+            $entityManager->flush();
+        
+            
+            $this->addFlash('success', 'L\'évenement a été modifié avec succès.');
+            return $this->redirectToRoute('app_calendar_home');  
+        }
+
+        return $this->render('event/form.html.twig', [
+            'form' => $form->createView(),
+        ]);
+    }
+
+    #[Route('/agenda/evenement/{id}', name: 'app_calendar_event_details')]
+    public function eventdetails(Events $events): Response
+    {
+
+        return $this->render('event/show.html.twig', [
+            'event' => $events,
+        ]);
     }
 }

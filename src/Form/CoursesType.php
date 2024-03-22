@@ -51,7 +51,7 @@ class CoursesType extends AbstractType
                 'html5' => false,
                 'attr' => [
                     'class' => 'form-control datetimepickr my-flatpickr',
-                    'data-route' => '/agenda/api/reserved_rooms', // Route pour récupérer les salles réservées
+                    'data-route' => '/agenda/cours/api/reserved_rooms', // Route pour récupérer les salles réservées
                 ],
             ])
             ->add('duration', IntegerType::class, [

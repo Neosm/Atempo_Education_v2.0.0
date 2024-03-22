@@ -6,7 +6,7 @@
 			{% block title %}Atempo-Education!
 			{% endblock %}
 		</title>
-		<link rel="icon" href="">
+    <link rel="icon" href="{{asset('assets/img/icon-atempo.png')}}"> 
 		{% block stylesheets %}
 		{% endblock %}
 		<!-- Font Awesome -->
@@ -45,7 +45,7 @@
 							<i class="bi bi-music-note"></i>
 							<span> Cours</span>
 						</a>
-						<a href="{{ path('app_calendar_home') }}" class="list-group-item list-group-item-action py-2 my-2 border-0 {% if app.request.attributes.get('_route') starts with 'app_calendar_courses_' %}active{% endif %}" data-mdb-ripple-init>
+						<a href="{{ path('app_calendar_home') }}" class="list-group-item list-group-item-action py-2 my-2 border-0 {% if app.request.attributes.get('_route') starts with 'app_calendar_' %}active{% endif %}" data-mdb-ripple-init>
 							<i class="bi bi-calendar3"></i>
 							<span> Agenda</span>
 						</a>
@@ -117,7 +117,7 @@
 							</a>
 							<ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdownMenuLink">
 								<li>
-									<a class="dropdown-item" href="#">Profil</a>
+									<a class="dropdown-item" href="{{ path('app_account_home') }}">Profil</a>
 								</li>
 								<li>
 									<a class="dropdown-item" href="#">Télécharger ses informations</a>

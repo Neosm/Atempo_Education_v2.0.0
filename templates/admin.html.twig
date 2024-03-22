@@ -1,0 +1,361 @@
+<!doctype html>
+<html lang="fr">
+	<head>
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<meta name="description" content="Atempo Education Musique">
+		<meta name="author" content="">
+		<meta name="generator" content="">
+		<meta charset="UTF-8">
+		<title>
+			{% block title %}Page en construction
+			{% endblock %}
+		</title>
+    	<link rel="icon" href="{{asset('assets/img/icon-atempo.png')}}"> 
+
+
+		{% block stylesheets %}{% endblock %}
+		<!-- Font Awesome -->
+		<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet"/>
+		<!-- Google Fonts -->
+		<link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap" rel="stylesheet"/>
+		<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+		<link href='https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css' rel='stylesheet'>
+		<link href="{{ asset('assets/css/light.css') }}" rel="stylesheet">
+	</head>
+	<body style="background: #293042">
+		<div class="wrapper">
+			<nav id="sidebar" class="sidebar">
+				<div class="sidebar-content js-simplebar" data-simplebar="init">
+					<div class="simplebar-wrapper" style="margin: 0px;">
+						<div class="simplebar-height-auto-observer-wrapper">
+							<div class="simplebar-height-auto-observer"></div>
+						</div>
+						<div class="simplebar-mask">
+							<div class="simplebar-offset" style="right: 0px; bottom: 0px;">
+								<div class="simplebar-content-wrapper" style="height: 100%; overflow: hidden scroll;">
+									<div class="simplebar-content" id="sidebar-atempo" style="padding: 0px;">
+										<a class="sidebar-brand" href="{{ path('app_secretariat_home') }}">
+											<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="20px" height="20px" viewbox="0 0 20 20" enable-background="new 0 0 20 20" xml:space="preserve">
+												<path d="M19.4,4.1l-9-4C10.1,0,9.9,0,9.6,0.1l-9,4C0.2,4.2,0,4.6,0,5s0.2,0.8,0.6,0.9l9,4C9.7,10,9.9,10,10,10s0.3,0,0.4-0.1l9-4C19.8,5.8,20,5.4,20,5S19.8,4.2,19.4,4.1z"></path>
+												<path d="M10,15c-0.1,0-0.3,0-0.4-0.1l-9-4c-0.5-0.2-0.7-0.8-0.5-1.3c0.2-0.5,0.8-0.7,1.3-0.5l8.6,3.8l8.6-3.8c0.5-0.2,1.1,0,1.3,0.5c0.2,0.5,0,1.1-0.5,1.3l-9,4C10.3,15,10.1,15,10,15z"></path>
+												<path d="M10,20c-0.1,0-0.3,0-0.4-0.1l-9-4c-0.5-0.2-0.7-0.8-0.5-1.3c0.2-0.5,0.8-0.7,1.3-0.5l8.6,3.8l8.6-3.8c0.5-0.2,1.1,0,1.3,0.5c0.2,0.5,0,1.1-0.5,1.3l-9,4C10.3,20,10.1,20,10,20z"></path>
+											</svg>
+											<span class="align-middle me-3">Atempo.Education</span>
+										</a>
+										<br>
+										<ul class="sidebar-nav">
+											<li class="sidebar-item {% if app.request.attributes.get('_route') == 'app_secretariat_home' %}active{% endif %}">
+												<a href="{{ path('app_secretariat_home') }}" class="sidebar-link">
+													<svg class="bi me-2" width="16" height="16">
+														<use xlink:href=""></use>
+													</svg>
+													<span class="align-middle">Tableau de bord</span>
+												</a>
+											</li>
+											<li class="sidebar-item {% if app.request.attributes.get('_route') starts with 'app_secretariat_users' %}active{% endif %}">
+												<a data-bs-target="#utilisateurs" data-bs-toggle="collapse" class="sidebar-link collapsed" aria-expanded="{% if app.request.attributes.get('_route') starts with 'app_secretariat_users' %}true{% else %}false{% endif %}">
+													<svg class="bi me-2" width="16" height="16">
+														<use xlink:href=""></use>
+													</svg>
+													<span class="align-middle">Utilisateurs</span>
+												</a>
+												<ul id="utilisateurs" class="sidebar-dropdown list-unstyled collapse {% if app.request.attributes.get('_route') starts with 'app_secretariat_users' %}show{% endif %}">
+													<li class="sidebar-item {% if app.request.attributes.get('_route') == 'app_secretariat_users' %}active{% endif %}">
+														<a href="{{ path('app_secretariat_users_home') }}" class="sidebar-link ">Tous les utilisateurs</a>
+													</li>
+													<li class="sidebar-item {% if app.request.attributes.get('_route') == 'app_secretariat_users_eleves' %}active{% endif %}">
+														<a href="{{ path('app_secretariat_users_eleves') }}" class="sidebar-link ">Élèves</a>
+													</li>
+													<li class="sidebar-item {% if app.request.attributes.get('_route') == 'app_secretariat_users_teachers' %}active{% endif %}">
+														<a href="{{ path('app_secretariat_users_teachers') }}" class="sidebar-link ">Professeurs</a>
+													</li>
+													<li class="sidebar-item {% if app.request.attributes.get('_route') == 'app_secretariat_users_administration' %}active{% endif %}">
+														<a href="{{ path('app_secretariat_users_administration') }}" class="sidebar-link ">Administrateurs</a>
+													</li>
+													<li class="sidebar-item {% if app.request.attributes.get('_route') == 'app_register' %}active{% endif %}">
+														<a href="{{ path('app_register') }}" class="sidebar-link ">Ajouter un utilisateur</a>
+													</li>
+												</ul>
+											</li>
+											<!-- Section Agenda -->
+											<li class="sidebar-item {% if app.request.attributes.get('_route') starts with 'app_secretariat_calendar_' %}active{% endif %}">
+												<a data-bs-target="#agenda" data-bs-toggle="collapse" aria-expanded="{% if app.request.attributes.get('_route') starts with 'app_secretariat_calendar_' %}true{% else %}false{% endif %}" class="sidebar-link collapsed">
+													<svg class="bi me-2" width="16" height="16">
+														<use xlink:href=""></use>
+													</svg>
+													<span class="align-middle">Agenda</span>
+												</a>
+												<ul id="agenda" class="sidebar-dropdown list-unstyled collapse {% if app.request.attributes.get('_route') starts with 'app_secretariat_calendar_' %}show{% endif %}">
+													<li class="sidebar-item  {% if app.request.attributes.get('_route') starts with 'app_secretariat_calendar_home' %}active{% endif %}">
+														<a href="{{ path('app_secretariat_calendar_home') }}" class="sidebar-link">Voir l'Agenda</a>
+													</li>
+													<li class="sidebar-item  {% if app.request.attributes.get('_route') starts with 'app_secretariat_calendar_courses_add' %}active{% endif %}">
+														<a href="{{ path('app_secretariat_calendar_courses_add') }}" class="sidebar-link">Ajouter un cours</a>
+													</li>
+													{# <li class="sidebar-item  {% if app.request.attributes.get('_route') starts with 'admin_studentclasse_create' %}active{% endif %}">
+														<a href="{{ path('admin_studentclasse_create') }}" class="sidebar-link">Ajouter un évènement</a>
+													</li> #}
+												</ul>
+											</li>
+											<!-- Section Classe -->
+											<li class="sidebar-item  {% if app.request.attributes.get('_route') starts with 'admin_studentclasse' %}active{% endif %}">
+												<a data-bs-target="#classe" data-bs-toggle="collapse" class="sidebar-link collapsed" aria-expanded="{% if app.request.attributes.get('_route') starts with 'admin_studentclasse' %}true{% else %}false{% endif %}">
+													<svg class="bi me-2" width="16" height="16">
+														<use xlink:href=""></use>
+													</svg>
+													<span class="align-middle">Classe</span>
+												</a>
+												<ul id="classe" class="sidebar-dropdown list-unstyled collapse {% if app.request.attributes.get('_route') starts with 'admin_studentclasse' %}show{% endif %}">
+													<li class="sidebar-item  {% if app.request.attributes.get('_route') starts with 'admin_studentclasse_liste' %}active{% endif %}">
+														<a href="" class="sidebar-link">Voir les classes</a>
+													</li>
+													<li class="sidebar-item  {% if app.request.attributes.get('_route') starts with 'admin_studentclasse_create' %}active{% endif %}">
+														<a href="" class="sidebar-link">Ajouter une classe</a>
+													</li>
+												</ul>
+											</li>
+											<!-- Section Discipline -->
+											<li class="sidebar-item  {% if app.request.attributes.get('_route') starts with 'admin_matiere_' %}active{% endif %}">
+												<a data-bs-target="#Disciplines" data-bs-toggle="collapse" class="sidebar-link collapsed" aria-expanded="{% if app.request.attributes.get('_route') starts with 'admin_matiere_' %}true{% else %}false{% endif %}">
+													<svg class="bi me-2" width="16" height="16">
+														<use xlink:href=""></use>
+													</svg>
+													<span class="align-middle">Disciplines</span>
+												</a>
+												<ul id="Disciplines" class="sidebar-dropdown list-unstyled collapse {% if app.request.attributes.get('_route') starts with 'admin_matiere_' %}show{% endif %}">
+													<li class="sidebar-item  {% if app.request.attributes.get('_route') starts with 'admin_matiere_liste' %}active{% endif %}">
+														<a href="" class="sidebar-link">Voir les Disciplines</a>
+													</li>
+													<li class="sidebar-item  {% if app.request.attributes.get('_route') starts with 'admin_matiere_create' %}active{% endif %}">
+														<a href="" class="sidebar-link">Ajouter une Discipline</a>
+													</li>
+												</ul>
+											</li>
+											<!-- Section Salle -->
+											<li class="sidebar-item  {% if app.request.attributes.get('_route') starts with 'admin_salle_' %}active{% endif %}">
+												<a data-bs-target="#salles" data-bs-toggle="collapse" class="sidebar-link collapsed" aria-expanded="{% if app.request.attributes.get('_route') starts with 'admin_salle_' %}true{% else %}false{% endif %}">
+													<svg class="bi me-2" width="16" height="16">
+														<use xlink:href=""></use>
+													</svg>
+													<span class="align-middle">Salles</span>
+												</a>
+												<ul id="salles" class="sidebar-dropdown list-unstyled collapse {% if app.request.attributes.get('_route') starts with 'admin_salle_' %}show{% endif %}">
+													<li class="sidebar-item  {% if app.request.attributes.get('_route') starts with 'admin_salle_liste' %}active{% endif %}">
+														<a href="" class="sidebar-link">Voir les salles</a>
+													</li>
+													<li class="sidebar-item  {% if app.request.attributes.get('_route') starts with 'admin_salle_create' %}active{% endif %}">
+														<a href="" class="sidebar-link">Ajouter une salle</a>
+													</li>
+													<li class="sidebar-item  {% if app.request.attributes.get('_route') starts with 'admin_salle_equipement_liste' %}active{% endif %}">
+														<a href="" class="sidebar-link">Voir les équipements</a>
+													</li>
+													<li class="sidebar-item  {% if app.request.attributes.get('_route') == 'admin_salle_equipement_create' %}active{% endif %}">
+														<a href="" class="sidebar-link">Ajouter des équipements</a>
+													</li>
+												</ul>
+											</li>
+											<!-- Section Notes -->
+											<li class="sidebar-item  {% if app.request.attributes.get('_route') starts with 'admin_resultats_' %}active{% endif %}">
+												<a data-bs-target="#notes" data-bs-toggle="collapse" class="sidebar-link collapsed" aria-expanded="{% if app.request.attributes.get('_route') starts with 'admin_resultats_' %}true{% else %}false{% endif %}">
+													<svg class="bi me-2" width="16" height="16">
+														<use xlink:href=""></use>
+													</svg>
+													<span class="align-middle">Appréciations</span>
+												</a>
+												<ul id="notes" class="sidebar-dropdown list-unstyled collapse {% if app.request.attributes.get('_route') starts with 'admin_resultats_' %}show{% endif %}">
+													<li class="sidebar-item  {% if app.request.attributes.get('_route') starts with 'admin_resultats_liste' %}active{% endif %}">
+														<a href="" class="sidebar-link">Voir les appréciations</a>
+													</li>
+													<li class="sidebar-item  {% if app.request.attributes.get('_route') starts with 'admin_resultats_ajouter' %}active{% endif %}">
+														<a href="" class="sidebar-link">Ajouter une appréciation</a>
+													</li>
+												</ul>
+											</li>
+											<!-- Section Assiduité -->
+											<li class="sidebar-item {% if app.request.attributes.get('_route') starts with 'admin_liste_' %}active{% endif %}">
+												<a data-bs-target="#assiduite" data-bs-toggle="collapse" class="sidebar-link collapsed" aria-expanded="{% if app.request.attributes.get('_route') starts with 'admin_liste_' %}true{% else %}false{% endif %}">
+													<svg class="bi me-2" width="16" height="16">
+														<use xlink:href=""></use>
+													</svg>
+													<span class="align-middle">Assiduité</span>
+												</a>
+												<ul id="assiduite" class="sidebar-dropdown list-unstyled collapse {% if app.request.attributes.get('_route') starts with 'admin_liste_' %}show{% endif %}">
+													<li class="sidebar-item">
+														<a data-bs-target="#retard" data-bs-toggle="collapse" class="sidebar-link collapsed" aria-expanded="{% if app.request.attributes.get('_route') starts with 'admin_liste_delay' %}true{% else %}false{% endif %}">
+															Retard
+														</a>
+														<ul id="retard" class="sidebar-dropdown list-unstyled collapse {% if app.request.attributes.get('_route') starts with 'admin_liste_delay' %}show {% endif %}">
+															<li class="sidebar-item {% if app.request.attributes.get('_route') starts with 'admin_liste_delay_liste' %}active {% endif %}">
+																<a href="" class="sidebar-link">Voir les retards</a>
+															</li>
+															<li class="sidebar-item {% if app.request.attributes.get('_route') starts with 'admin_liste_delay_create' %}active {% endif %}">
+																<a href="" class="sidebar-link">Ajouter des retards</a>
+															</li>
+														</ul>
+													</li>
+													<li class="sidebar-item">
+														<a data-bs-target="#absences" data-bs-toggle="collapse" class="sidebar-link collapsed" aria-expanded="{% if app.request.attributes.get('_route') starts with 'admin_liste_absence' %}true{% else %}false{% endif %}">
+															Absences
+														</a>
+														<ul id="absences" class="sidebar-dropdown list-unstyled collapse {% if app.request.attributes.get('_route') starts with 'admin_liste_absence' %}show {% endif %}">
+															<li class="sidebar-item {% if app.request.attributes.get('_route') starts with 'admin_liste_absence_liste' %}active {% endif %}">
+																<a href="" class="sidebar-link">Voir les absences</a>
+															</li>
+															<li class="sidebar-item {% if app.request.attributes.get('_route') starts with 'admin_liste_absence_create' %}active {% endif %}">
+																<a href="" class="sidebar-link">Ajouter des absences</a>
+															</li>
+														</ul>
+													</li>
+												</ul>
+											</li>
+											<li class="sidebar-item {% if app.request.attributes.get('_route') starts with 'app_secretariat_lessons_' or  app.request.attributes.get('_route') starts with 'app_secretariat_programs_' %}active{% endif %}">
+												<a data-bs-target="#lecons" data-bs-toggle="collapse" class="sidebar-link collapsed" aria-expanded="{% if app.request.attributes.get('_route') starts with 'app_secretariat_lessons_' or  app.request.attributes.get('_route') starts with 'app_secretariat_programs_' %}true{% else %}false{% endif %}">
+													<svg class="bi me-2" width="16" height="16">
+														<use xlink:href=""></use>
+													</svg>
+													<span class="align-middle">Leçons</span>
+												</a>
+												<ul id="lecons" class="sidebar-dropdown list-unstyled collapse {% if app.request.attributes.get('_route') starts with 'app_secretariat_lessons_' or  app.request.attributes.get('_route') starts with 'app_secretariat_programs_'%}show{% endif %}">
+													<li class="sidebar-item {% if app.request.attributes.get('_route') starts with 'app_secretariat_lessons_home' %}active{% endif %}">
+														<a href="{{ path('app_secretariat_lessons_home') }}" class="sidebar-link ">Toutes les leçons</a>
+													</li>
+													<li class="sidebar-item {% if app.request.attributes.get('_route') starts with 'app_secretariat_lessons_add' %}active{% endif %}">
+														<a href="{{ path('app_secretariat_lessons_add') }}" class="sidebar-link ">Ajouter une leçon</a>
+													</li>
+													<li class="sidebar-item {% if app.request.attributes.get('_route') starts with 'app_secretariat_programs_home' %}active{% endif %}">
+														<a href="{{ path('app_secretariat_programs_home') }}" class="sidebar-link ">Programmes</a>
+													</li>
+												</ul>
+											</li>
+											<li class="sidebar-item {% if app.request.attributes.get('_route') starts with 'app_secretariat_posts_' or  app.request.attributes.get('_route') starts with 'admin_categories_'%}true{% else %}false{% endif %}">
+												<a data-bs-target="#articles" data-bs-toggle="collapse" class="sidebar-link collapsed" aria-expanded="{% if app.request.attributes.get('_route') starts with 'app_secretariat_posts_' or  app.request.attributes.get('_route') starts with 'admin_categories_' %}true{% else %}false{% endif %}">
+													<svg class="bi me-2" width="16" height="16">
+														<use xlink:href=""></use>
+													</svg>
+													<span class="align-middle">Articles</span>
+												</a>
+												<ul id="articles" class="sidebar-dropdown list-unstyled collapse {% if app.request.attributes.get('_route') starts with 'app_secretariat_posts_' or  app.request.attributes.get('_route') starts with 'admin_categories_' %}show{% endif %}">
+													<li class="sidebar-item {% if app.request.attributes.get('_route') starts with 'app_secretariat_posts_' %}active{% endif %}">
+														<a href="{{ path('app_secretariat_posts_home') }}" class="sidebar-link ">Tous les articles</a>
+													</li>
+													<li class="sidebar-item {% if app.request.attributes.get('_route') starts with 'app_secretariat_posts_add' %}active{% endif %}">
+														<a href="{{ path('app_secretariat_posts_add') }}" class="sidebar-link ">Ajouter un article</a>
+													</li>
+												</ul>
+											</li>
+										</ul>
+
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="simplebar-placeholder" style="width: auto; height: 1061px;"></div>
+					</div>
+					<div class="simplebar-track simplebar-horizontal" style="visibility: hidden;">
+						<div class="simplebar-scrollbar" style="width: 0px; display: none;"></div>
+					</div>
+					<div class="simplebar-track simplebar-vertical" style="visibility: visible;">
+						<div class="simplebar-scrollbar" style="height: 884px; transform: translate3d(0px, 0px, 0px); display: block;"></div>
+					</div>
+				</div>
+			</nav>
+			<div class="main bg-light">
+				<nav class="navbar navbar-expand navbar-dark navbar-bg" style="background: #202634">
+					<a class="sidebar-toggle" id="sidebarToggle">
+						<i class="white-hamburger align-self-center"></i>
+					</a>
+					{# <form class="d-none d-sm-inline-block">
+						<div class="input-group input-group-navbar">
+							<input type="text" class="form-control" placeholder="Rechercher" aria-label="Search">
+							<button class="btn" type="button">
+								<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-search align-middle">
+									<circle cx="11" cy="11" r="8"></circle>
+									<line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+								</svg>
+							</button>
+						</div>
+					</form> #}
+					<div class="navbar-collapse collapse">
+						<ul class="navbar-nav navbar-align">
+							<li class="nav-item dropdown">
+								<a class="nav-icon dropdown-toggle d-inline-block d-sm-none" href="#" data-bs-toggle="dropdown">
+									<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-settings align-middle">
+										<circle cx="12" cy="12" r="3"></circle>
+										<path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+									</svg>
+								</a>
+								<a class="nav-link dropdown-toggle d-none d-sm-inline-block" href="#" data-bs-toggle="dropdown">
+									<img src="{{ asset('/uploads/profile_pics/' ~ app.user.thumbnail) }}" class="avatar img-fluid rounded-circle me-1" alt="Photo de profil de {{ app.user.firstname }}">
+									<span class="text-white">{{ app.user.firstname }}</span>
+								</a>
+								<div class="dropdown-menu dropdown-menu-end">
+									<a class="dropdown-item" href="{{ path('app_account_home') }}">
+										<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-user align-middle me-1">
+											<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+											<circle cx="12" cy="7" r="4"></circle>
+										</svg>
+										Profil
+									</a>
+									<div class="dropdown-divider"></div>
+									<a class="dropdown-item" href="{{ path('app_account_password') }}">Changer de mot de passe</a>
+									<a class="dropdown-item" href="{{ path('app_logout') }}">Déconnexion</a>
+								</div>
+							</li>
+						</ul>
+					</div>
+				</nav>
+				<main class="content">
+					<div class="container-fluid p-0"> {% block body %}{% endblock %}
+						</div>
+					</main>
+					{% block footer %}
+						<footer class="footer">
+							<div class="container-fluid">
+								<div class="col-6 text-end">
+									<p class="mb-0">
+										© 2021 -
+										<script>
+											document.write(new Date().getFullYear())
+										</script>
+										-
+										<a href="{{ path('app_secretariat_home') }}" class="text-muted">Atempo.Education</a>
+									</p>
+								</div>
+							</div>
+						</footer>
+					{% endblock %}
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+
+
+<script src="https://code.jquery.com/jquery-3.6.0.js" integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk=" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.min.js" integrity="sha384-0pUGZvbkm6XF6gxjEnlmuGrJXVbNuzT9qBBavbLwCsOGabYfZo0T0to5eqruptLy" crossorigin="anonymous"></script>
+<script src="https://cdn.datatables.net/1.12.1/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.12.1/js/dataTables.bootstrap5.min.js"></script>
+<script>
+    let sidebar = document.querySelector('#sidebarToggle');
+
+    sidebar.addEventListener("click", function () {
+        let getIdCollapsed = document.getElementById('sidebar');
+
+        if (getIdCollapsed.classList.contains("collapsed")) {
+            getIdCollapsed.classList.remove("collapsed");
+        } else {
+            getIdCollapsed.classList.add("collapsed");
+        }
+    })
+
+</script>
+
+{% block javascripts %}
+
+{% endblock %}
+
+</body>
+</html>
+

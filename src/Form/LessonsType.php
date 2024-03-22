@@ -60,8 +60,8 @@ class LessonsType extends AbstractType
             ->add('type', ChoiceType::class, [
                 'label' => 'Leçons privée ou publique',
                 'choices'  => [
-                    'Publique' => true,
-                    'Privée' => false,
+                    'Publique' => '1',
+                    'Privée' => '0',
                 ],
                 'attr' => [
                     'class' => 'form-control'

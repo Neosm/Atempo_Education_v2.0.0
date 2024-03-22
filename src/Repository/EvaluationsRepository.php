@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\Evaluations;
+use App\Entity\Users;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -19,6 +20,19 @@ class EvaluationsRepository extends ServiceEntityRepository
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, Evaluations::class);
+    }
+
+    public function findEventsByUser(Users $user)
+    {
+        return $this->createQueryBuilder('e')
+            ->leftJoin('e.teacher', 't')
+            ->leftJoin('e.studentclasses', 'sc')
+            ->leftJoin('sc.students', 's')
+            ->leftJoin('e.students', 'u') // Ajout de la jointure avec la relation ManyToMany users
+            ->andWhere('t = :user OR s = :user OR u = :user') // Ajout de la condition pour vérifier la relation avec users
+            ->setParameter('user', $user)
+            ->getQuery()
+            ->getResult();
     }
 
 //    /**

@@ -32,6 +32,7 @@ class RegistrationController extends AbstractController
                     $form->get('password')->getData()
                 )
             );
+            $user->setUniqid(uniqid(mt_rand(), true));
             $thumbnail = $form->get('thumbnail')->getData();
             if ($thumbnail) {
                 $originalFilename = pathinfo($thumbnail->getClientOriginalName(), PATHINFO_FILENAME);

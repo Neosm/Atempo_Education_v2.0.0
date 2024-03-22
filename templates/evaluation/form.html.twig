@@ -1,0 +1,236 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Ajouter un nouvel examen
+{% endblock %}
+
+
+{% block stylesheets %}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet"/>
+
+{% endblock %}
+
+
+{% block body %}
+	<h1>Ajouter un examen</h1>
+
+{{ form_start(form) }}
+
+<div class="container mt-5">
+    <div class="row mb-3">
+        <div class="col">
+            {{ form_row(form.discipline) }}
+        </div>
+    </div>
+
+    <div class="row mb-3">
+        <div class="col">
+            {{ form_row(form.start) }}
+        </div>
+        <div class="col">
+            {{ form_row(form.duration) }}
+        </div>
+        <div class="col">
+            {{ form_row(form.teacher) }}
+        </div>
+    </div>
+
+	    <div class="row mb-3">
+        <div class="col">
+            {{ form_row(form.room) }}
+        </div>
+        <div class="col">
+            {{ form_row(form.coefficient) }}
+        </div>
+        <div class="col">
+            {{ form_row(form.max_notation) }}
+        </div>
+    </div>
+
+    <div class="row mb-3">
+        <div class="col">
+            <label for="{{ form.studentswitch.vars.id }}">Sélectionner le ou les élèves concerné(s)</label>
+        </div>
+    </div>
+    
+    <div class="row mb-3">
+        <div class="col">
+            <div class="form-check form-switch">
+            {% if app.request.attributes.get('_route') == 'agenda_edit_event' %}
+                {{ form_widget(form.studentswitch, {'attr': {'checked': event.students is not empty}}) }}
+            {% else %}
+                {{ form_widget(form.studentswitch) }}
+            {% endif %}
+            {{ form_label(form.studentswitch) }}
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-3">
+        <div class="col">
+            {{ form_row(form.studentClasses) }}
+            {{ form_row(form.students) }}
+        </div>
+    </div>
+
+    {% if form.comment is defined %}
+        <div class="row mb-3">
+            <div class="col">
+                {{ form_row(form.comment) }}
+            </div>
+        </div>
+    {% endif %}
+
+    {% if form.objective is defined %}
+        <div class="row mb-3">
+            <div class="col">
+                {{ form_row(form.objective) }}
+            </div>
+        </div>
+    {% endif %}
+
+    <div class="row mb-4">
+        <div class="col">
+            <button class="btn btn-primary">{{ button_label|default('Sauvegarder') }}</button>
+	        <a href="{{ path('app_calendar_home') }}" class="btn primary-custom-button float-end">Retour à l'agenda</a>
+        </div>
+    </div>
+</div>
+
+{{ form_row(form.reservedRooms, {'attr': {'style': 'display: none;'}}) }}
+
+
+{{ form_end(form) }}
+
+
+{% endblock %}
+
+
+{% block javascripts %}
+<script src = "https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"> </script>
+<script src = "https://cdn.jsdelivr.net/npm/flatpickr"> </script> 
+<script src = "https://npmcdn.com/flatpickr/dist/l10n/fr.js" > </script> 
+<script >
+	$(document).ready(function() {
+		$('.students-field').select2({
+			placeholder: "Sélectionner le ou les élèves concerné(s)",
+			closeOnSelect: false
+		});
+		$('.programmes-field').select2({
+			placeholder: "Souhaitez-vous ajouter un/des programme(s) ?",
+			closeOnSelect: false
+		});
+		$('.lecons-field').select2({
+			placeholder: "Souhaitez-vous ajouter une/des leçon(s) ?",
+			closeOnSelect: false
+		});
+		$('.student-class-field').select2({
+			placeholder: "Souhaitez-vous une ou plusieurs classes ?",
+			closeOnSelect: false
+		});
+
+		var studentClassSelect = $('#evaluations_studentClasses');
+		var studentsSelect = $('#evaluations_students');
+		var studentSwitchInput = $('#evaluations_studentswitch');
+		// Masquer les élèves au chargement de la page
+		studentsSelect.next('.select2-container').hide();
+		$('.label-students').hide();
+		// Afficher la classe par défaut
+		studentClassSelect.show();
+		$('.label-studentClass').show();
+		// Écouter les changements sur le champ switch student
+		studentSwitchInput.on('change', function() {
+			if ($(this).is(':checked')) {
+				studentClassSelect.next('.select2-container').hide();
+				$('.label-studentClass').hide();
+
+				studentsSelect.next('.select2-container').show();
+				$('.label-students').show();
+
+				// Vider le champ de la classe et réinitialiser sa valeur
+				studentClassSelect.val(null).trigger('change');
+
+			} else {
+				studentsSelect.next('.select2-container').hide();
+				$('.label-students').hide();
+
+				studentClassSelect.next('.select2-container').show();
+				$('.label-studentClass').show();
+
+				// Vider le champ des élèves et réinitialiser sa valeur
+				studentsSelect.val(null).trigger('change');
+			}
+		});
+
+		
+
+		flatpickr('.datetimepickr', {
+			enableTime: true,
+			dateFormat: "Y-m-d H:i",
+			time_24hr: true,
+			minTime: "00:00",
+			maxTime: "23:59"
+		});
+
+		var materialsCheckboxes = document.querySelectorAll('.materials-checkboxes input[type="checkbox"]');
+		var roomSelect = document.querySelector('.room-select');
+		var startField = $('#evaluations_start');
+		var durationField = $('#evaluations_duration');
+		// Champ zoomlink
+
+		// Écouter l'événement 'change' sur les champs de matériel et de durée
+		materialsCheckboxes.forEach(function(checkbox) {
+			checkbox.addEventListener('change', updateRooms);
+		});
+
+		durationField.on('input', updateRooms);
+
+
+		// Fonction pour mettre à jour les salles en fonction des matériaux sélectionnés, de l'heure et de la durée
+		function updateRooms() {
+			var selectedMaterials = Array.from(materialsCheckboxes).filter(function(checkbox) {
+				return checkbox.checked;
+			}).map(function(checkbox) {
+				return checkbox.value;
+			});
+
+			var startValue = startField.val();
+			var durationValue = durationField.val();
+			// Récupérer la valeur du champ zoomlink
+
+			// Construire l'URL de l'API avec les paramètres appropriés
+			var apiUrl = '/agenda/cours/api/rooms';
+			apiUrl += '?materials=' + selectedMaterials.join(',');
+			apiUrl += '&start=' + startValue;
+			apiUrl += '&duration=' + durationValue;
+			// Ajouter la valeur du champ zoomlink
+
+			// Fetch des salles en fonction des équipements sélectionnés, de l'heure et de la durée
+			fetch(apiUrl).then(function(response) {
+				return response.json();
+			}).then(function(rooms) { // Mise à jour des options de sélection de la salle
+				while (roomSelect.firstChild) {
+					roomSelect.removeChild(roomSelect.firstChild);
+				}
+
+				rooms.forEach(function(room) {
+					var option = document.createElement('option');
+					option.value = room.id;
+					option.textContent = room.name;
+					roomSelect.appendChild(option);
+				});
+			}).catch(function(error) {
+				console.log(error);
+			});
+		}
+
+		// Appeler la fonction pour mettre à jour les salles initialement
+		updateRooms();
+
+		// Écouteur d'événement pour le champ de l'heure de début
+		startField.change(updateRooms);
+		$('#evaluations_zoomswitch').on('change', updateRooms); // Écouteur sur le champ zoomswitch
+
+	}); 
+    </script>
+{% endblock %}

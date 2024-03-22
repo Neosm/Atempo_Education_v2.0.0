@@ -1,4 +1,5 @@
-{% extends 'base.html.twig' %}
+{% extends is_granted('ROLE_SECRETARIAT') ? 'admin.html.twig' : 'base.html.twig' %}
+
 
 {% block title %}Inscrire un utilisateur
 {% endblock %}
@@ -14,18 +15,18 @@
 	<div class="row pt-4">
 		<div class="col-md-6 mb-4">
 
-			<div class="form-outline">
-				{{ form_widget(registrationForm.firstname) }}
+			<div class="">
 				{{ form_label(registrationForm.firstname) }}
+				{{ form_widget(registrationForm.firstname) }}
 			</div>
 
 		</div>
 		<div class="col-md-6 mb-4">
 
-			<div class="form-outline">
+			<div class="">
 
-				{{ form_widget(registrationForm.lastname) }}
 				{{ form_label(registrationForm.lastname) }}
+				{{ form_widget(registrationForm.lastname) }}
 			</div>
 
 		</div>
@@ -34,17 +35,17 @@
 	<div class="row">
 		<div class="col-md-6 mb-4 pb-2">
 
-			<div class="form-outline">
-				{{ form_widget(registrationForm.email) }}
+			<div class="">
 				{{ form_label(registrationForm.email) }}
+				{{ form_widget(registrationForm.email) }}
 			</div>
 
 		</div>
 		<div class="col-md-6 mb-4 pb-2">
 
-			<div class="form-outline">
-				{{ form_widget(registrationForm.phone_number) }}
+			<div class="">
 				{{ form_label(registrationForm.phone_number) }}
+				{{ form_widget(registrationForm.phone_number) }}
 			</div>
 
 		</div>
@@ -53,17 +54,17 @@
 	<div class="row">
 		<div class="col-md-6 mb-4 pb-2">
 
-			<div class="form-outline">
-				{{ form_widget(registrationForm.area_code) }}
+			<div class="">
 				{{ form_label(registrationForm.area_code) }}
+				{{ form_widget(registrationForm.area_code) }}
 			</div>
 
 		</div>
 		<div class="col-md-6 mb-4 pb-2">
 
-			<div class="form-outline">
-				{{ form_widget(registrationForm.address) }}
+			<div class="">
 				{{ form_label(registrationForm.address) }}
+				{{ form_widget(registrationForm.address) }}
 			</div>
 
 		</div>
@@ -72,17 +73,17 @@
 	<div class="row">
 		<div class="col-md-6 mb-4 pb-2">
 
-			<div class="form-outline">
-				{{ form_widget(registrationForm.zip_code) }}
+			<div class="">
 				{{ form_label(registrationForm.zip_code) }}
+				{{ form_widget(registrationForm.zip_code) }}
 			</div>
 
 		</div>
 		<div class="col-md-6 mb-4 pb-2">
 
-			<div class="form-outline">
-				{{ form_widget(registrationForm.city) }}
+			<div class="">
 				{{ form_label(registrationForm.city) }}
+				{{ form_widget(registrationForm.city) }}
 			</div>
 
 		</div>
@@ -90,7 +91,7 @@
 	<div class="row">
 		<div class="col-md-6 mb-4 pb-2">
 
-			<div class="form-outline">
+			<div class="">
 				{{ form_label(registrationForm.date_of_birth) }}
 				{{ form_widget(registrationForm.date_of_birth) }}
 			</div>
@@ -98,7 +99,7 @@
 		</div>
 		<div class="col-md-6 mb-4 pb-2">
 
-			<div class="form-outline">
+			<div class="">
 				{{ form_label(registrationForm.thumbnail) }}
 				{{ form_widget(registrationForm.thumbnail) }}
 			</div>
@@ -108,7 +109,7 @@
 	<div class="row">
 		<div class="col-md-6 mb-4 pb-2">
 
-			<div class="form-outline">
+			<div class="">
 				{{ form_label(registrationForm.roles) }}
 				{{ form_widget(registrationForm.roles) }}
 			</div>
@@ -116,9 +117,9 @@
 		</div>
 		<div class="col-md-6 mb-4 pb-2">
 
-			<div class="form-outline">
-				{{ form_widget(registrationForm.password) }}
+			<div class="">
 				{{ form_label(registrationForm.password) }}
+				{{ form_widget(registrationForm.password) }}
 			</div>
 
 		</div>

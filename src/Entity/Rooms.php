@@ -28,9 +28,17 @@ class Rooms
     #[ORM\OneToMany(targetEntity: Courses::class, mappedBy: 'room')]
     private Collection $courses;
 
+    #[ORM\OneToMany(targetEntity: Evaluations::class, mappedBy: 'room')]
+    private Collection $evaluations;
+
+    #[ORM\OneToMany(targetEntity: Events::class, mappedBy: 'room')]
+    private Collection $events;
+
     public function __construct()
     {
         $this->courses = new ArrayCollection();
+        $this->evaluations = new ArrayCollection();
+        $this->events = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -98,6 +106,66 @@ class Rooms
             // set the owning side to null (unless already changed)
             if ($course->getRoom() === $this) {
                 $course->setRoom(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Evaluations>
+     */
+    public function getEvaluations(): Collection
+    {
+        return $this->evaluations;
+    }
+
+    public function addEvaluation(Evaluations $evaluation): static
+    {
+        if (!$this->evaluations->contains($evaluation)) {
+            $this->evaluations->add($evaluation);
+            $evaluation->setRoom($this);
+        }
+
+        return $this;
+    }
+
+    public function removeEvaluation(Evaluations $evaluation): static
+    {
+        if ($this->evaluations->removeElement($evaluation)) {
+            // set the owning side to null (unless already changed)
+            if ($evaluation->getRoom() === $this) {
+                $evaluation->setRoom(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Events>
+     */
+    public function getEvents(): Collection
+    {
+        return $this->events;
+    }
+
+    public function addEvent(Events $event): static
+    {
+        if (!$this->events->contains($event)) {
+            $this->events->add($event);
+            $event->setRoom($this);
+        }
+
+        return $this;
+    }
+
+    public function removeEvent(Events $event): static
+    {
+        if ($this->events->removeElement($event)) {
+            // set the owning side to null (unless already changed)
+            if ($event->getRoom() === $this) {
+                $event->setRoom(null);
             }
         }
 

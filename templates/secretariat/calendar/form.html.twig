@@ -1,0 +1,353 @@
+{% extends 'admin.html.twig' %}
+
+{% block title %}Ajouter un nouvel évènement
+{% endblock %}
+
+
+{% block stylesheets %}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet"/>
+
+{% endblock %}
+
+
+{% block body %}
+	<h1>Ajouter un évènement</h1>
+
+{{ form_start(form) }}
+
+<div class="container mt-5">
+    <div class="row mb-3">
+        <div class="col">
+            {{ form_row(form.discipline) }}
+        </div>
+    </div>
+
+    <div class="row mb-3">
+        <div class="col">
+            {{ form_row(form.start) }}
+        </div>
+        <div class="col">
+            {{ form_row(form.duration) }}
+        </div>
+        <div class="col">
+            {{ form_row(form.teacher) }}
+        </div>
+    </div>
+
+        <div class="row mb-3">
+        <div class="col">
+            {{ form_row(form.recurrence, {'attr': {'class': 'custom-select form-control'}}) }}
+        </div>
+    </div>
+
+    <div id="recurrence-fields">
+        <div class="row mb-3">
+            <div class="col">
+                {{ form_row(form.recurrence_frequency) }}
+            </div>
+        </div>
+        <div class="row mb-3">
+            <div class="col">
+                {{ form_row(form.recurrence_end) }}
+            </div>
+        </div>
+    </div>
+
+
+    <div class="row mb-3">
+        <div class="col">
+            <label for="{{ form.zoomswitch.vars.id }}">Cours en visio ou non</label>
+        </div>
+    </div>
+    
+    <div class="row mb-3">
+        <div class="col">
+            <div class="form-check form-switch">
+            {% if app.request.attributes.get('_route') == 'agenda_edit_event' %}
+                {{ form_widget(form.zoomswitch, {'attr': {'checked': event.zoomlink is not null}}) }}
+            {% else %}
+                {{ form_widget(form.zoomswitch) }}
+            {% endif %}
+            {{ form_label(form.zoomswitch) }}
+            </div>
+        </div>
+    </div>
+    <div class="row mb-3">
+        <div class="col">
+            {{ form_row(form.room) }}
+        </div>
+        {{ form_row(form.zoom_link) }}
+    </div>
+
+    <div class="row mb-3">
+        <div class="col">
+            {{ form_row(form.programs) }}
+        </div>
+        <div class="col">
+            {{ form_row(form.lessons) }}
+        </div>
+    </div>
+
+    <div class="row mb-3">
+        <div class="col">
+            <label for="{{ form.studentswitch.vars.id }}">Sélectionner le ou les élèves concerné(s)</label>
+        </div>
+    </div>
+    
+    <div class="row mb-3">
+        <div class="col">
+            <div class="form-check form-switch">
+            {% if app.request.attributes.get('_route') == 'agenda_edit_event' %}
+                {{ form_widget(form.studentswitch, {'attr': {'checked': event.students is not empty}}) }}
+            {% else %}
+                {{ form_widget(form.studentswitch) }}
+            {% endif %}
+            {{ form_label(form.studentswitch) }}
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-3">
+        <div class="col">
+            {{ form_row(form.studentClasses) }}
+            {{ form_row(form.students) }}
+        </div>
+    </div>
+
+    {% if form.comment is defined %}
+        <div class="row mb-3">
+            <div class="col">
+                {{ form_row(form.comment) }}
+            </div>
+        </div>
+    {% endif %}
+
+    {% if form.objectives is defined %}
+        <div class="row mb-3">
+            <div class="col">
+                {{ form_row(form.objectives) }}
+            </div>
+        </div>
+    {% endif %}
+
+        {% if form.modificationScope is defined %}
+        <div class="row mb-3">
+            <div class="col">
+                {{ form_row(form.modificationScope) }}
+            </div>
+        </div>
+    {% endif %}
+
+
+    <div class="row mb-4">
+        <div class="col">
+            <button class="btn btn-primary">{{ button_label|default('Sauvegarder') }}</button>
+	        <a href="{{ path('app_calendar_home') }}" class="btn primary-custom-button float-end">Retour à l'agenda</a>
+        </div>
+    </div>
+</div>
+
+{{ form_row(form.reservedRooms, {'attr': {'style': 'display: none;'}}) }}
+
+
+{{ form_end(form) }}
+
+
+{% endblock %}
+
+
+{% block javascripts %}
+<script src = "https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"> </script>
+<script src = "https://cdn.jsdelivr.net/npm/flatpickr"> </script> 
+<script src = "https://npmcdn.com/flatpickr/dist/l10n/fr.js" > </script> 
+<script >
+	$(document).ready(function() {
+		$('.students-field').select2({
+			placeholder: "Sélectionner le ou les élèves concerné(s)",
+			closeOnSelect: false
+		});
+		$('.programmes-field').select2({
+			placeholder: "Souhaitez-vous ajouter un/des programme(s) ?",
+			closeOnSelect: false
+		});
+		$('.lecons-field').select2({
+			placeholder: "Souhaitez-vous ajouter une/des leçon(s) ?",
+			closeOnSelect: false
+		});
+
+		var studentClassSelect = $('#courses_studentClasses');
+		var studentsSelect = $('#courses_students');
+		var studentSwitchInput = $('#courses_studentswitch');
+		// Masquer les élèves au chargement de la page
+		studentsSelect.next('.select2-container').hide();
+		$('.label-students').hide();
+		// Afficher la classe par défaut
+		studentClassSelect.show();
+		$('.label-studentClass').show();
+		// Écouter les changements sur le champ switch student
+		studentSwitchInput.on('change', function() {
+			if ($(this).is(':checked')) {
+				studentClassSelect.hide();
+				$('.label-studentClass').hide();
+
+				studentsSelect.next('.select2-container').show();
+				$('.label-students').show();
+
+				// Vider le champ de la classe et réinitialiser sa valeur
+				studentClassSelect.val('').trigger('change');
+
+			} else {
+				studentsSelect.next('.select2-container').hide();
+				$('.label-students').hide();
+
+				studentClassSelect.show();
+				$('.label-studentClass').show();
+
+				// Vider le champ des élèves et réinitialiser sa valeur
+				studentsSelect.val(null).trigger('change');
+			}
+		});
+
+		var zoomLinkSelect = $('#courses_zoom_link');
+		var roomSwitchselect = $('#courses_room');
+		var roomSwitchInput = $('#courses_zoomswitch');
+
+		// Masquer le zoom au chargement de la page
+		zoomLinkSelect.hide();
+		$('.label-zoom').hide();
+
+		// Afficher les salles par défaut
+		roomSwitchselect.show();
+		$('#row-materials').show();
+		$('.label-room').show();
+		$('.label-materials').show();
+		// Écouter les changements sur le champ switch room
+
+		roomSwitchInput.on('change', function() {
+			if ($(this).is(':checked')) {
+				$('.label-room').hide();
+				$('.label-materials').hide();
+				$('#row-materials').hide();
+				roomSwitchselect.hide();
+
+				zoomLinkSelect.show();
+				$('.label-zoom').show();
+
+				// Vider le champ de la classe et réinitialiser sa valeur
+				roomSwitchselect.val('').trigger('change');
+				$('#event_form_materials .form-check-input').prop('checked', false).trigger('change');
+
+			} else {
+				zoomLinkSelect.hide();
+				$('.label-zoom').hide();
+
+				$('.label-room').show();
+				roomSwitchselect.show();
+				$('#row-materials').show();
+				$('.label-materials').show();
+
+				// Vider le champ des élèves et réinitialiser sa valeur
+				zoomLinkSelect.val(null).trigger('change');
+			}
+		});
+
+		flatpickr('.datetimepickr', {
+			enableTime: true,
+			dateFormat: "Y-m-d H:i",
+			time_24hr: true,
+			minTime: "00:00",
+			maxTime: "23:59"
+		});
+
+		var materialsCheckboxes = document.querySelectorAll('.materials-checkboxes input[type="checkbox"]');
+		var roomSelect = document.querySelector('.room-select');
+		var startField = $('#courses_start');
+		var durationField = $('#courses_duration');
+		var zoomlinkField = $('#courses_zoom_link');
+		// Champ zoomlink
+
+		// Écouter l'événement 'change' sur les champs de matériel et de durée
+		materialsCheckboxes.forEach(function(checkbox) {
+			checkbox.addEventListener('change', updateRooms);
+		});
+
+		durationField.on('input', updateRooms);
+
+		// Écouteur d'événement pour le champ zoomlink
+		zoomlinkField.on('input', updateRooms);
+
+		// Fonction pour mettre à jour les salles en fonction des matériaux sélectionnés, de l'heure et de la durée
+		function updateRooms() {
+			var selectedMaterials = Array.from(materialsCheckboxes).filter(function(checkbox) {
+				return checkbox.checked;
+			}).map(function(checkbox) {
+				return checkbox.value;
+			});
+
+			var startValue = startField.val();
+			var durationValue = durationField.val();
+			var zoomlinkValue = zoomlinkField.val();
+			// Récupérer la valeur du champ zoomlink
+
+			// Construire l'URL de l'API avec les paramètres appropriés
+			var apiUrl = '/agenda/cours/api/rooms';
+			apiUrl += '?materials=' + selectedMaterials.join(',');
+			apiUrl += '&start=' + startValue;
+			apiUrl += '&duration=' + durationValue;
+			apiUrl += '&zoomlink=' + zoomlinkValue;
+			// Ajouter la valeur du champ zoomlink
+
+			// Fetch des salles en fonction des équipements sélectionnés, de l'heure et de la durée
+			fetch(apiUrl).then(function(response) {
+				return response.json();
+			}).then(function(rooms) { // Mise à jour des options de sélection de la salle
+				while (roomSelect.firstChild) {
+					roomSelect.removeChild(roomSelect.firstChild);
+				}
+
+				rooms.forEach(function(room) {
+					var option = document.createElement('option');
+					option.value = room.id;
+					option.textContent = room.name;
+					roomSelect.appendChild(option);
+				});
+			}).catch(function(error) {
+				console.log(error);
+			});
+		}
+
+		// Appeler la fonction pour mettre à jour les salles initialement
+		updateRooms();
+
+		// Écouteur d'événement pour le champ de l'heure de début
+		startField.change(updateRooms);
+		$('#courses_zoomswitch').on('change', updateRooms); // Écouteur sur le champ zoomswitch
+
+    var recurrenceFields = $('#recurrence-fields');
+    var isRecurringSelect = $('#courses_recurrence');
+
+    // Masquer les champs de récurrence au chargement de la page
+    recurrenceFields.hide();
+
+    // Écouter les changements sur le champ isRecurring (liste déroulante)
+    isRecurringSelect.on('change', function() {
+    console.log('La sélection de la liste déroulante a changé.');
+    var selectedValue = $(this).val();
+    console.log('Valeur sélectionnée : ' + selectedValue);
+
+    if (selectedValue === '1') {
+        recurrenceFields.show();
+        console.log('Affichage des champs de récurrence.');
+    } else {
+        recurrenceFields.hide();
+        console.log('Masquage des champs de récurrence.');
+    }
+});
+
+    // Appeler la fonction initiale pour vérifier l'état initial de la liste déroulante
+    isRecurringSelect.trigger('change');
+
+	}); 
+    </script>
+{% endblock %}

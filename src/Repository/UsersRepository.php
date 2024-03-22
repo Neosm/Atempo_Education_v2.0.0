@@ -84,6 +84,29 @@ class UsersRepository extends ServiceEntityRepository implements PasswordUpgrade
             ->getResult();
     }
 
+    public function findAllAdminByEcole($ecole)
+    {
+        return $this->createQueryBuilder('u')
+            ->andWhere('u.roles LIKE :val')
+            ->andWhere('u.school = :ecole')
+            ->setParameter('val', '%["ROLE_ADMIN"]%')
+            ->setParameter('ecole', $ecole)
+            ->orderBy('u.id', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
+    
+    public function findAllTeacherByEcole($ecole)
+    {
+        return $this->createQueryBuilder('u')
+            ->andWhere('u.roles LIKE :val')
+            ->andWhere('u.school = :ecole')
+            ->setParameter('val', '%["ROLE_TEACHER"]%')
+            ->setParameter('ecole', $ecole)
+            ->getQuery()
+            ->getResult();
+    }
+
 //    /**
 //     * @return Users[] Returns an array of Users objects
 //     */

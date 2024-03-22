@@ -1,0 +1,81 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Ajouter un nouvel événement
+{% endblock %}
+
+
+{% block stylesheets %}
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+	<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet"/>
+
+{% endblock %}
+
+
+{% block body %}
+	<h1>Ajouter un événement</h1>
+
+	{{ form_start(form) }}
+
+	<div class="container mt-5">
+		<div class="row mb-3">
+			<div class="col">
+				{{ form_row(form.name) }}
+			</div>
+		</div>
+
+		<div class="row mb-3">
+			<div class="col">
+				{{ form_row(form.start) }}
+			</div>
+			<div class="col">
+				{{ form_row(form.end) }}
+			</div>
+		</div>
+		<div class="row mb-3">
+			<div class="col">
+				{{ form_row(form.users) }}
+			</div>
+		</div>
+		<div class="col">
+            {{ form_row(form.room) }}
+        </div>
+		<div class="row mb-3">
+			<div class="col">
+				{{ form_row(form.description) }}
+			</div>
+		</div>
+
+		<div class="row mb-4">
+			<div class="col">
+				<button class="btn btn-primary">{{ button_label|default('Sauvegarder') }}</button>
+				<a href="{{ path('app_calendar_home') }}" class="btn primary-custom-button float-end">Retour à l'agenda</a>
+			</div>
+		</div>
+	</div>
+
+	{{ form_end(form) }}
+
+
+{% endblock %}
+
+
+{% block javascripts %}
+	<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+	<script src="https://npmcdn.com/flatpickr/dist/l10n/fr.js"></script>
+	<script>
+		$(document).ready(function () {
+			$('.users-field').select2({placeholder: "Sélectionner le ou les élèves concerné(s)", closeOnSelect: false});
+
+
+			flatpickr('.datetimepickr', {
+			enableTime: true,
+			dateFormat: "Y-m-d H:i",
+			time_24hr: true,
+			minTime: "00:00",
+			maxTime: "23:59"
+			});
+		});
+	</script>
+{% endblock %}
+

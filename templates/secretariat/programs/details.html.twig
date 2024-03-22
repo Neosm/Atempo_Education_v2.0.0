@@ -1,0 +1,47 @@
+{% extends 'admin.html.twig' %}
+
+{% block title %}{{ programme.name }}{% endblock %}
+
+{% block body %}
+    <h1 class="h3 mb-3">{{ programme.name }} ({{ programme.lessons|length }} leçon{% if programme.lessons|length > 1%}s{% endif %})</h1>
+
+    <div class="row">
+        {% for lecon in programme.lessons %}
+            <div class="col-12 col-md-6 col-lg-3">
+                    <div class="card">
+                        <a href="{{ path('app_secretariat_lessons_details', {slug: lecon.slug}) }}" class=" text-decoration-none">
+                        <img class="card-img-top" src="{{ asset('/uploads/lessons/images/' ~ lecon.thumnail) }}" alt="{{ programme.name }} - {{ lecon.thumnail }}">
+                        <div class="card-header px-4 pt-4">
+                            <h2 class="card-title mb-0 me-4">{{ lecon.name }}</h2>
+                        </div>
+                        <div class="card-body px-4 pt-2">
+                            <p>{{ lecon.content|striptags|u.truncate(75, '...')|raw}}</p>
+                            <p class="card-text">
+                                {% if lecon.lessonspdfs is not empty %}
+                                    <i class="bi bi-file-earmark-pdf text-primary" style="font-size: 2rem;"></i>
+                                {% else %}
+                                    <i class="bi bi-file-earmark-pdf" style="font-size: 2rem;"></i>
+                                {% endif %}
+                                {% if lecon.lessonsaudios is not empty %}
+                                    <i class="bi bi-volume-up-fill text-primary" style="font-size: 2rem;"></i>
+                                {% else %}
+                                    <i class="bi bi-volume-up-fill" style="font-size: 2rem;"></i>
+                                {% endif %}
+                                {% if lecon.lessonsvideos is not empty %}
+                                    <i class="bi bi-camera-video-fill text-primary" style="font-size: 2rem;"></i>
+                                {% else %}
+                                    <i class="bi bi-camera-video-fill" style="font-size: 2rem;"></i>
+                                {% endif %}
+                            </p>
+                        </div>
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item px-4 pb-4">
+                            <a href="{{ path('app_secretariat_lessons_details', {slug: lecon.slug}) }}" class="btn btn-primary">Lire la leçon</a>
+                            </li>
+                        </ul>
+                        </a>
+                    </div>
+            </div>
+        {% endfor %}
+    </div>
+{% endblock %}

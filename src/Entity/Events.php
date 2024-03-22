@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\EventsRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -34,6 +36,20 @@ class Events
 
     #[ORM\Column(length: 7)]
     private ?string $text_color = null;
+
+    #[ORM\ManyToMany(targetEntity: Users::class, inversedBy: 'events')]
+    private Collection $users;
+
+    #[ORM\Column(length: 255)]
+    private ?string $id_unique = null;
+
+    #[ORM\ManyToOne(inversedBy: 'events')]
+    private ?Rooms $room = null;
+
+    public function __construct()
+    {
+        $this->users = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -120,6 +136,54 @@ class Events
     public function setTextColor(string $text_color): static
     {
         $this->text_color = $text_color;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Users>
+     */
+    public function getUsers(): Collection
+    {
+        return $this->users;
+    }
+
+    public function addUser(Users $user): static
+    {
+        if (!$this->users->contains($user)) {
+            $this->users->add($user);
+        }
+
+        return $this;
+    }
+
+    public function removeUser(Users $user): static
+    {
+        $this->users->removeElement($user);
+
+        return $this;
+    }
+
+    public function getIdUnique(): ?string
+    {
+        return $this->id_unique;
+    }
+
+    public function setIdUnique(string $id_unique): static
+    {
+        $this->id_unique = $id_unique;
+
+        return $this;
+    }
+
+    public function getRoom(): ?Rooms
+    {
+        return $this->room;
+    }
+
+    public function setRoom(?Rooms $room): static
+    {
+        $this->room = $room;
 
         return $this;
     }

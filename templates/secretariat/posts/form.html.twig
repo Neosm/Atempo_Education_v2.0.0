@@ -1,0 +1,85 @@
+{% extends 'admin.html.twig' %}
+
+
+{% block stylesheets %}
+<script src="https://cdn.tiny.cloud/1/yoe38ufqjg37oumv691khx2lcmxcfhnk4m16imk5guzvgbmh/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
+{% endblock %}
+
+{% block title %}
+	{% if app.request.attributes.get('_route') == 'app_posts_modify' %}
+		Modifier l'article :
+		{{ post.name }}
+	{% else %}
+		Ajouter un article
+	{% endif %}
+{% endblock %}
+
+
+{% block body %}
+<section class="my-4">
+{% if app.request.attributes.get('_route') == 'app_posts_modify' %}
+		<h1 class="h3 my-3">Modifier l'article :
+			{{ post.name }}</h1>
+	{% else %}
+		<h1 class="h3 my-3">Ajouter un article</h1>
+	{% endif %}
+
+	{{ form_start(form) }}
+
+	<div class="row mb-4">
+		<div class="col">
+			<div data-mdb-input-init class="">
+				{{ form_label(form.name) }}
+				{{ form_widget(form.name) }}
+			</div>
+		</div>
+		<div class="col">
+			<div data-mdb-input-init class="">
+				{{ form_label(form.categorie) }}
+				{{ form_widget(form.categorie) }}
+			</div>
+		</div>
+	</div>
+	<div data-mdb-input-init class="mb-4">
+		{{ form_row(form.content) }}
+	</div>
+
+	<div class="row mb-4">
+		<div class="col">
+			<div data-mdb-input-init class="mb-4">
+				{{ form_label(form.thumbnail) }}
+				{{ form_widget(form.thumbnail) }}
+				{% if app.request.attributes.get('_route') == 'app_lessons_modify' %}
+					<div>
+						<img src="/uploads/lessons/images/{{post.thumbnail}}" alt="Atempo-Education | {{ post.thumbnail }}" height="150">
+					</div>
+				{% endif %}
+			</div>
+		</div>
+	</div>
+
+	{% if app.request.attributes.get('_route') == 'app_posts_modify' %}
+	<button type="submit" class="btn primary-custom-button">Modifier l'article</button>
+	{% else %}
+	<button type="submit" class="btn primary-custom-button">Créer un article</button>
+	{% endif %}
+
+
+	
+	<a href="{{ path('app_posts_home') }}" class="btn secondary-custom-button float-end">Retour aux articles</a>
+
+	{{ form_end(form) }}
+
+</section>
+{% endblock %}
+
+{% block javascripts %}
+	<script>
+        window.onload = () => {
+			tinymce.init({
+				selector: 'textarea',
+			});
+        }
+    </script>
+{% endblock %}
+

@@ -89,6 +89,9 @@ class Users implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\ManyToMany(targetEntity: Evaluations::class, mappedBy: 'students')]
     private Collection $evaluations;
 
+    #[ORM\OneToMany(targetEntity: Evaluations::class, mappedBy: 'teacher')]
+    private Collection $evaluationsteacher;
+
     #[ORM\OneToMany(targetEntity: Absences::class, mappedBy: 'student')]
     private Collection $absences;
 
@@ -104,6 +107,12 @@ class Users implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\ManyToMany(targetEntity: Courses::class, mappedBy: 'students')]
     private Collection $courses;
 
+    #[ORM\ManyToMany(targetEntity: Events::class, mappedBy: 'users')]
+    private Collection $events;
+
+    #[ORM\Column(length: 255)]
+    private ?string $uniqid = null;
+
     public function __construct()
     {
         $this->programs = new ArrayCollection();
@@ -117,6 +126,8 @@ class Users implements UserInterface, PasswordAuthenticatedUserInterface
         $this->created_at = new \DateTimeImmutable();
         $this->courses = new ArrayCollection();
         $this->coursesteacher = new ArrayCollection();
+        $this->evaluationsteacher = new ArrayCollection();
+        $this->events = new ArrayCollection();
     }
 
     public function __toString()
@@ -504,6 +515,33 @@ class Users implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
+    public function getEvaluationsTeacher(): Collection
+    {
+        return $this->evaluationsteacher;
+    }
+
+    public function addEvaluationTeacher(Evaluations $evaluationsteacher): static
+    {
+        if (!$this->evaluationsteacher->contains($evaluationsteacher)) {
+            $this->evaluationsteacher->add($evaluationsteacher);
+            $evaluationsteacher->setTeacher($this);
+        }
+
+        return $this;
+    }
+
+    public function removeEvaluationTeacher(Evaluations $evaluationsteacher): static
+    {
+        if ($this->coursesteacher->removeElement($evaluationsteacher)) {
+            // set the owning side to null (unless already changed)
+            if ($evaluationsteacher->getTeacher() === $this) {
+                $evaluationsteacher->setTeacher(null);
+            }
+        }
+
+        return $this;
+    }
+
     /**
      * @return Collection<int, Absences>
      */
@@ -648,6 +686,45 @@ class Users implements UserInterface, PasswordAuthenticatedUserInterface
                 $coursesteacher->setTeacher(null);
             }
         }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Events>
+     */
+    public function getEvents(): Collection
+    {
+        return $this->events;
+    }
+
+    public function addEvent(Events $event): static
+    {
+        if (!$this->events->contains($event)) {
+            $this->events->add($event);
+            $event->addUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeEvent(Events $event): static
+    {
+        if ($this->events->removeElement($event)) {
+            $event->removeUser($this);
+        }
+
+        return $this;
+    }
+
+    public function getUniqid(): ?string
+    {
+        return $this->uniqid;
+    }
+
+    public function setUniqid(string $uniqid): static
+    {
+        $this->uniqid = $uniqid;
 
         return $this;
     }
