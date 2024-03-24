@@ -6,6 +6,7 @@ use App\Repository\CoursesRepository;
 use App\Repository\EvaluationsRepository;
 use App\Repository\EventsRepository;
 use App\Repository\PostsRepository;
+use App\Repository\StudentClassesRepository;
 use App\Repository\UsersRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
@@ -14,11 +15,14 @@ use Symfony\Component\Routing\Attribute\Route;
 class SecretariatHomeController extends AbstractController
 {
     #[Route('/secretariat/', name: 'app_secretariat_home')]
-    public function index(EventsRepository $eventsRepository, PostsRepository $artsRepo, CoursesRepository $coursesRepository, EvaluationsRepository $evaluationsRepository): Response
+    public function index(EventsRepository $eventsRepository, 
+    PostsRepository $artsRepo, CoursesRepository $coursesRepository, 
+    EvaluationsRepository $evaluationsRepository, StudentClassesRepository $studentClassesRepository): Response
     {
         // Récupérer l'utilisateur connecté (vous pouvez adapter cela selon votre logique d'authentification)
         $user = $this->getUser();
         $ecole = $user->getSchool();
+        $studentclasses  = $studentClassesRepository->findBy(['school' => $ecole]);
 
         // Récupérer les événements associés à l'utilisateur
         $courses  = $coursesRepository->findBy(['school' => $ecole]);
@@ -53,6 +57,7 @@ class SecretariatHomeController extends AbstractController
         return $this->render('secretariat/home/index.html.twig', [
             'jsonEvents' => $jsonEvents,
             'articles' => $articles,
+            'classes' => $studentclasses,
         ]);
     }
 }

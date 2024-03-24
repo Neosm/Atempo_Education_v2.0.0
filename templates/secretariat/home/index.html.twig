@@ -65,132 +65,124 @@
 			<div
 				class="col-md-7 m-4 mt-5">
 				<!-- Boutons arrondis -->
-					<div class="card">
-                        <div class="card-body">
-                            <div id="calendar"></div>
-                        </div>
-                    </div>
-
-
-
-				
-			<!-- Carte pour le contenu "Actualité" -->
-			<div class="card mb-4 card-shadow" style="border-radius: 15px;">
-				<div class="card-body p-4 pb-0 text-black">
-					<div>
-						<h2 class="mb-4 primary-color font-weight-bold h3">
-							<i class="bi bi-newspaper h3 me-1"></i>
-							ACTUALITÉS</h2>
-						<div class="d-flex align-items-center justify-content-between mb-3 border-top"></div>
+				<div class="card">
+					<div class="card-body">
+						<div id="calendar"></div>
 					</div>
-					{% if articles %}
-						{% for article in articles|slice(0,2) %}
-							<div class="my-3">
-								<div class="d-flex align-items-center">
-									<div class="flex-grow-1 ms-3">
-										<div class="d-flex flex-row align-items-center mb-0 ms-4">
-											<p class="h3 pe-3 primary-color">{{ article.name }}</p>
-											<p class="text-muted text-secondary mb-0">créé le
-												{{ article.createdAt|date("d M Y") }}</p>
+				</div>
 
+
+				<!-- Carte pour le contenu "Actualité" -->
+				<div class="card mb-4 card-shadow" style="border-radius: 15px;">
+					<div class="card-body p-4 pb-0 text-black">
+						<div>
+							<h2 class="mb-4 primary-color font-weight-bold h3">
+								<i class="bi bi-newspaper h3 me-1"></i>
+								ACTUALITÉS</h2>
+							<div class="d-flex align-items-center justify-content-between mb-3 border-top"></div>
+						</div>
+						{% if articles %}
+							{% for article in articles|slice(0,2) %}
+								<div class="my-3">
+									<div class="d-flex align-items-center">
+										<div class="flex-grow-1 ms-3">
+											<div class="d-flex flex-row align-items-center mb-0 ms-4">
+												<p class="h3 pe-3 primary-color">{{ article.name }}</p>
+												<p class="text-muted text-secondary mb-0">créé le
+													{{ article.createdAt|date("d M Y") }}</p>
+
+											</div>
+											{{ article.content|striptags|u.truncate(400, '...')|raw }}
 										</div>
-										{{ article.content|striptags|u.truncate(400, '...')|raw }}
+									</div>
+									<a href="{{ path('app_secretariat_posts_details', {slug: article.slug}) }}" class="text-dark fw-bold mb-3">Lire la suite</a>
+								</div>
+
+							{% endfor %}
+						{% else %}
+							Aucune Actualité pour le moment. Revenez plus tard.
+						{% endif %}
+						<div class="border-top"></div>
+						<a href="{{ path('app_secretariat_posts_home') }}">
+							<p class="my-4 pb-1 text-center fw-bold fs-5">Toutes les actualités</p>
+						</a>
+					</div>
+				</div>
+			</div>
+			<!-- Colonne de droite -->
+			<div
+				class="col-md-4 mt-5">
+				<!-- Première boîte de droite -->
+				<div class="card mb-4 card-shadow" style="border-radius: 15px;">
+					<div class="card-body p-4 pb-0 text-black">
+						<div>
+							<h2 class="mb-4 primary-color font-weight-bold h3">
+								<i class="bi bi-calendar3 h3 me-1"></i>
+								AGENDA</h2>
+							<div class="d-flex align-items-center justify-content-between mb-3 border-top"></div>
+						</div>
+						{% set nextEvents = nextEvents|sort((a, b) => a.start <=> b.start)|slice(0, 3) %}
+						{% if nextEvents|length > 0 %}
+							{% for event in nextEvents %}
+								<a href="{{ path('app_calendar_courses_details',{id: event.id}) }}" style="color: {{ event.textcolor }}!important" class="">
+									<div class="card mb-3" style="border-radius: 25px;">
+										<div class="card-body p-4" style="border-radius: 25px; background: {{ event.backgroundcolor }}!important">
+											<h3 class="mb-3 h4" style="border-radius: 15px; color: {{ event.textcolor }}!important">{{ event.name }}</h3>
+											<p class="small mb-0" style="color: {{ event.textcolor }}!important">
+												{{ event.start|format_datetime(pattern="eeee d MMM à HH'h'mm") }}
+												<span class="mx-2">|</span>
+												{% if event.room is not null %}
+													Salle :
+													{{ event.room.name }}</span>
+											{% elseif event.zoomlink is not null %}
+												A distanciel :
+												<a href="{{ event.zoomlink }}" target="_blank" rel="noopener noreferrer">Lien Zoom</a>
+											{% endif %}
+										</p>
 									</div>
 								</div>
-								<a href="{{ path('app_posts_details', {slug: article.slug}) }}" class="text-dark fw-bold mb-3">Lire la suite</a>
-							</div>
-
+							</a>
 						{% endfor %}
 					{% else %}
-						Aucune Actualité pour le moment. Revenez plus tard.
+						Vous n'avez aucun évènement prévu pour le moment. Revenez plus tard.
 					{% endif %}
 					<div class="border-top"></div>
-					<a href="{{ path('app_posts_home') }}">
-						<p class="my-4 pb-1 text-center fw-bold fs-5">Toutes les actualités</p>
+					<a href="{{ path('app_secretariat_calendar_home') }}">
+						<p class="my-4 pb-1 text-center fw-bold fs-5">Tout mon agenda</p>
 					</a>
 				</div>
 			</div>
-		</div>
-		<!-- Colonne de droite -->
-		<div
-			class="col-md-4 mt-5">
-			<!-- Première boîte de droite -->
 			<div class="card mb-4 card-shadow" style="border-radius: 15px;">
 				<div class="card-body p-4 pb-0 text-black">
 					<div>
 						<h2 class="mb-4 primary-color font-weight-bold h3">
 							<i class="bi bi-calendar3 h3 me-1"></i>
-							AGENDA</h2>
+							Classes</h2>
 						<div class="d-flex align-items-center justify-content-between mb-3 border-top"></div>
 					</div>
-					{% set nextEvents = nextEvents|sort((a, b) => a.start <=> b.start)|slice(0, 3) %}
-					{% if nextEvents|length > 0 %}
-						{% for event in nextEvents %}
-							<a href="{{ path('app_calendar_courses_details',{id: event.id}) }}" style="color: {{ event.textcolor }}!important" class="">
-								<div class="card mb-3" style="border-radius: 25px;">
-									<div class="card-body p-4" style="border-radius: 25px; background: {{ event.backgroundcolor }}!important">
-										<h3 class="mb-3 h4" style="border-radius: 15px; color: {{ event.textcolor }}!important">{{ event.name }}</h3>
-										<p class="small mb-0" style="color: {{ event.textcolor }}!important">
-											{{ event.start|format_datetime(pattern="eeee d MMM à HH'h'mm") }}
-											<span class="mx-2">|</span>
-											{% if event.room is not null %}
-												Salle :
-												{{ event.room.name }}</span>
-										{% elseif event.zoomlink is not null %}
-											A distanciel :
-											<a href="{{ event.zoomlink }}" target="_blank" rel="noopener noreferrer">Lien Zoom</a>
-										{% endif %}
+					{% set classes = classes|sort((a, b) => a.start <=> b.start)|slice(0, 3) %}
+					{% for classe in classes %}
+						<a href="{{ path('app_secretariat_student_classes_details', {'id' : classe.id }) }}" class="text-black-50">
+							<div class="card mb-3" style="border-radius: 15px;">
+								<div class="card-body p-4">
+									<h3 class="mb-3 primary-color h4">Classe : {{ classe.name }}</h3>
+									<p class="small mb-0">
+										Élèves : {{ classe.students|length }}
 									</p>
 								</div>
 							</div>
 						</a>
 					{% endfor %}
-				{% else %}
-					Aucun prochain cours pour le moment. Revenez plus tard.
-				{% endif %}
-				<div class="border-top"></div>
-				<a href="{{ path('app_calendar_home') }}">
-					<p class="my-4 pb-1 text-center fw-bold fs-5">Tout mon agenda</p>
-				</a>
-			</div>
-		</div>
-		<div class="card mb-4 card-shadow" style="border-radius: 15px;">
-			<div class="card-body p-4 pb-0 text-black">
-				<div>
-					<h2 class="mb-4 primary-color font-weight-bold h3">
-						<i class="bi bi-calendar3 h3 me-1"></i>
-						ÉVALUATIONS</h2>
-					<div class="d-flex align-items-center justify-content-between mb-3 border-top"></div>
+					<div class="border-top"></div>
+					<a href="{{ path('app_secretariat_student_classes_home') }}">
+						<p class="my-4 pb-1 text-center fw-bold fs-5">Toutes les Classes</p>
+					</a>
 				</div>
-				{% set nextEvents = nextEvents|sort((a, b) => a.start <=> b.start)|slice(0, 3) %}
-				{% if nextEvents|length > 0 %}
-					{% for event in nextEvents %}
-						{% if event in  app.user.evaluations or event in app.user.evaluationsteacher %}
-							<a href="" class="text-black-50">
-								<div class="card mb-3" style="border-radius: 15px;">
-									<div class="card-body p-4">
-										<h3 class="mb-3 primary-color h4">{{ event.name }}</h3>
-										<p class="small mb-0">
-											{{ event.start|format_datetime(pattern="eeee d MMM à HH'h'mm") }}
-											<span class="mx-2">|</span>
-											Salle :{{ event.room.name }}
-										</p>
-									</div>
-								</div>
-							</a>
-						{% endif %}
-					{% endfor %}
-				{% else %}
-					Aucun prochain cours pour le moment. Revenez plus tard.
-				{% endif %}
-				<div class="border-top"></div>
-				<a href="{{ path('app_calendar_home') }}">
-					<p class="my-4 pb-1 text-center fw-bold fs-5">Toutes mes évaluations</p>
-				</a>
 			</div>
 		</div>
 	</div>
-</div>{% endblock %}
+{% endblock %}
+
 
 {% block javascripts %}
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>

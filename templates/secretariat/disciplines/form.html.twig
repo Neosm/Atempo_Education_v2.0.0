@@ -1,0 +1,31 @@
+{% extends 'admin.html.twig' %}
+
+{% block title %}{% if app.request.attributes.get('_route') == 'app_secretariat_disciplines_create' %}Créer une Discipline{% else %}Modifier la Discipline{% endif %}{% endblock %}
+
+{% block body %}
+<div class="container">
+    <h1>{% if app.request.attributes.get('_route') == 'app_secretariat_disciplines_create' %}Créer une Discipline{% else %}Modifier la Discipline{% endif %}</h1>
+    
+    {% if app.flashes('success') %}
+        <div class="alert alert-success mt-3">
+            {{ app.flashes('success')|first }}
+        </div>
+    {% endif %}
+    
+    <form method="post">
+        {{ form_start(form) }}
+        
+        {{ form_row(form.name, {'attr': {'class': 'form-control'}}) }}
+        {{ form_row(form.teachers) }}
+            <div class="row mb-4">
+                <div class="col">
+                    <button class="btn btn-primary">{{ button_label|default('Sauvegarder') }}</button>
+                </div>
+            </div>
+        
+        {{ form_end(form) }}
+    </form>
+    
+    <a href="{{ path('app_secretariat_disciplines_home') }}" class="btn btn-secondary mt-3 float-end">Retour à la liste des Disciplines</a>
+</div>
+{% endblock %}

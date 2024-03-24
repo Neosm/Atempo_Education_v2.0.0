@@ -65,7 +65,8 @@
 	<script src="https://npmcdn.com/flatpickr/dist/l10n/fr.js"></script>
 	<script>
 		$(document).ready(function () {
-			$('.users-field').select2({placeholder: "Sélectionner le ou les élèves concerné(s)", closeOnSelect: false});
+			$('.users-field').select2({
+				closeOnSelect: false});
 
 
 			flatpickr('.datetimepickr', {

@@ -35,6 +35,27 @@ class CoursesRepository extends ServiceEntityRepository
             ->getResult();
     }
 
+    public function findReservedRooms($start, $end): array
+    {
+        $qb = $this->createQueryBuilder('e')
+            ->select('r')
+            ->from('App\Entity\Rooms', 'r')
+            ->leftJoin('e.room', 'room')
+            ->andWhere(
+                '(:start >= e.start AND :start < DATE_ADD(e.start, e.duration, \'MINUTE\')) OR ' .
+                '(:end > e.start AND :end <= DATE_ADD(e.start, e.duration, \'MINUTE\')) OR ' .
+                '(:start < e.start AND :end > DATE_ADD(e.start, e.duration, \'MINUTE\'))'
+            )
+            ->setParameter('start', new \DateTime($start))
+            ->setParameter('end', new \DateTime($end))
+            ->andWhere('room.id = r.id');
+
+
+        $reservedRooms = $qb->getQuery()->getResult();
+
+        return $reservedRooms;
+    }
+
 
 //    /**
 //     * @return Courses[] Returns an array of Courses objects

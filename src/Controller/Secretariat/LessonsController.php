@@ -88,7 +88,6 @@ class LessonsController extends AbstractController
 
                     $lessons->addLessonsPDF($newPDF);
                     $entityManager->persist($lessons);
-                    dump($lessons);
                 }
                     
             }

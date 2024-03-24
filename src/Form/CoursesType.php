@@ -132,6 +132,23 @@ class CoursesType extends AbstractType
                     'class' => 'form-control',
                 ]
             ])
+            ->add('materials', ChoiceType::class, [
+                'label' => 'Trier les salles par équipement',
+                'choices' => array_unique($options['equipments']),
+                'mapped' => false,
+                'multiple' => true,
+                'expanded' => true,
+                'required' => false,
+                'attr' => [
+                    'class' => 'materials-field materials-checkboxes'
+                ],
+                'row_attr' =>[
+                    "id" => "row-materials"
+                ],
+                'label_attr' => [
+                    'class' => 'label-materials form-check-label',
+                ],
+            ])
             ->add('room', EntityType::class, [
                 'class' => Rooms::class,
                 'placeholder' => 'Choisir une salle pour le cours',
@@ -300,6 +317,7 @@ class CoursesType extends AbstractType
         $resolver->setDefaults([
             'data_class' => Courses::class,
             'ecole' => null,
+            'equipments' => [],
         ]);
     }
 }

@@ -1,0 +1,36 @@
+{% extends 'admin.html.twig' %}
+
+{% block title %}{% if app.request.attributes.get('_route') == 'app_secretariat_student_classes_create' %}Créer une classe {% else %}
+	Modifier la classe {% endif %}{% endblock %}
+
+{% block stylesheets %}
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet"/>
+
+{% endblock %}
+{% block body %}
+
+{{ form_start(form) }}
+        {{ form_row(form.name) }}
+        {{ form_row(form.students) }}
+
+		{% if app.request.attributes.get('_route') == 'app_secretariat_student_classes_edit' %}
+			<button type="submit" class="btn primary-custom-button">Modifier la classe</button>
+		{% else %}
+			<button type="submit" class="btn primary-custom-button">Créer la classe</button>
+		{% endif %}
+
+{{ form_end(form) }}
+
+{% endblock %}
+
+{% block javascripts %}
+<script src = "https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"> </script>
+<script>
+$(document).ready(function() {
+		$('.students-field').select2({
+			closeOnSelect: false
+		});
+})
+</script>
+
+{% endblock %}

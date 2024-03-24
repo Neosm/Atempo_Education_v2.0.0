@@ -19,9 +19,20 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Serializer\SerializerInterface;
 
 class CalendarController extends AbstractController
 {
+
+    private $serializer;
+    private $roomRepository;
+
+    public function __construct(RoomsRepository $roomRepository, SerializerInterface $serializer)
+    {
+        $this->roomRepository = $roomRepository;
+        $this->serializer = $serializer;
+    }
+
     function getDescription($event)
     {
         $students = $event->getStudents();
@@ -206,13 +217,20 @@ class CalendarController extends AbstractController
     }
 
     #[Route('/agenda/cours/creer', name: 'app_calendar_courses_add')]
-    public function coursesadd(Request $request, EntityManagerInterface $entityManager): Response
+    public function coursesadd(Request $request, EntityManagerInterface $entityManager, RoomsRepository $roomsRepository): Response
     {
         $event = new Courses();
         $ecole =  $this->getUser()->getSchool();
-        
+        $equipments = [];
 
-        $form = $this->createForm(CoursesType::class, $event, ['ecole' => $ecole]);
+        $rooms = $roomsRepository->findBy(['school' => $ecole]);
+        foreach ($rooms as $room) {
+            foreach ($room->getEquipments() as $equipment) {
+                $equipments[$equipment] = $equipment;
+            }
+        }
+        
+        $form = $this->createForm(CoursesType::class, $event, ['ecole' => $ecole, 'equipments' => $equipments]);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
@@ -948,7 +966,6 @@ class CalendarController extends AbstractController
         $startDate = $firstEvent->getStart()->format('Ymd');
         $endDate = $lastEvent->getEnd()->format('Ymd');
         $userDateOfBirth = $user->getDateOfBirth()->format('Y-m-d');
-        dump($allEvents);
 
         // Générer le contenu du fichier iCalendar
         $content = "BEGIN:VCALENDAR\r\n";
@@ -1260,4 +1277,87 @@ class CalendarController extends AbstractController
             'event' => $events,
         ]);
     }
+
+    #[Route('/agenda/api/salles', name: 'app_calendar_api_rooms')]
+    public function apiRoomChange(Request $request, SerializerInterface $serializer, CoursesRepository $coursesRepository): Response
+    {
+        $materialIds = $request->query->get('materials');
+        $materialIdsArray = explode(',', $materialIds);
+        $start = $request->query->get('start');
+        // Récupérer les données envoyées via AJAX
+        $zoomlink = $request->query->get('zoomlink');
+        $ecole = $this->getUser()->getSchool();
+
+        $duration = $request->query->get('duration'); // Récupérer la durée depuis la requête
+        $startTime = new \DateTime($start);
+        $end = clone $startTime;
+        $end->add(new \DateInterval('PT' . intval($duration) . 'M')); // Ajouter la durée en minutes
+
+        // Formatter endTime en tant que chaîne de caractères au format souhaité
+        $endAsString = $end->format('Y-m-d H:i');
+        dump($end);
+
+        // Récupérer les salles réservées en fonction de l'heure de début et de fin
+        $reservedRooms = $coursesRepository->findReservedRooms($start, $endAsString);
+
+
+        // Récupérer l'ID de l'événement que vous modifiez (si applicable)
+        $eventId = $request->query->get('eventId'); // Remplacez 'eventId' par la clé réelle
+
+        if ($eventId) {
+            // Récupérer l'événement en fonction de son ID
+            $event = $coursesRepository->find($eventId);
+
+            // Si l'événement existe et a une salle réservée, retirer cette salle des salles réservées
+            if ($event && $event->getRoom()) {
+                $eventRoomId = $event->getRoom()->getId();
+                $reservedRooms = array_filter($reservedRooms, function ($reservedRoom) use ($eventRoomId) {
+                    return $reservedRoom->getId() !== $eventRoomId;
+                });
+            }
+        }
+        if (!empty($zoomlink)) {
+            // Si le champ "zoomlink" est rempli, aucune salle ne sera affichée
+            $availableRooms = [];
+        } else {
+            if (empty(array_filter($materialIdsArray))) {
+                // Si aucun équipement n'est sélectionné, renvoyer toutes les salles
+                $filteredRooms = $this->roomRepository->findBy(['school' => $ecole]);
+            } else {
+                // Créer le QueryBuilder filtré pour les matériaux sélectionnés
+                $queryBuilder = $this->roomRepository->createFilteredQuery($materialIdsArray);
+                // Exécuter la requête et récupérer les salles en fonction des équipements sélectionnés
+                $filteredRooms = $queryBuilder->getQuery()->getResult();
+            }
+        
+            // Filtrer les salles disponibles en excluant les salles réservées
+            $availableRooms = array_filter($filteredRooms, function ($room) use ($reservedRooms) {
+                return !in_array($room, $reservedRooms);
+            });
+        
+            $availableRooms = array_values($availableRooms); // Réindexer le tableau
+        }
+
+        $roomData = [];
+        foreach ($availableRooms as $room) {
+            $roomData[] = [
+                'id' => $room->getId(),
+                'name' => $room->getName(),
+            ];
+        }
+
+        $normalizedRooms = $serializer->normalize($roomData, null, [
+            'circular_reference_handler' => function ($object) {
+                return $object['id'];
+            }
+        ]);
+
+        $response = new JsonResponse($normalizedRooms);
+        $response->setEncodingOptions(JSON_UNESCAPED_UNICODE);
+
+        // Renvoyer la réponse
+        return $response;
+    }
+
+
 }

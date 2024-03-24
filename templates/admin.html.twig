@@ -92,82 +92,79 @@
 													<li class="sidebar-item  {% if app.request.attributes.get('_route') starts with 'app_secretariat_calendar_courses_add' %}active{% endif %}">
 														<a href="{{ path('app_secretariat_calendar_courses_add') }}" class="sidebar-link">Ajouter un cours</a>
 													</li>
-													{# <li class="sidebar-item  {% if app.request.attributes.get('_route') starts with 'admin_studentclasse_create' %}active{% endif %}">
-														<a href="{{ path('admin_studentclasse_create') }}" class="sidebar-link">Ajouter un évènement</a>
-													</li> #}
+													<li class="sidebar-item  {% if app.request.attributes.get('_route') starts with 'app_secretariat_calendar_evaluation_add' %}active{% endif %}">
+														<a href="{{ path('app_secretariat_calendar_evaluation_add') }}" class="sidebar-link">Ajouter une évaluation</a>
+													</li>
+													<li class="sidebar-item  {% if app.request.attributes.get('_route') starts with 'app_secretariat_calendar_event_add' %}active{% endif %}">
+														<a href="{{ path('app_secretariat_calendar_event_add') }}" class="sidebar-link">Ajouter un évènement</a>
+													</li>
 												</ul>
 											</li>
 											<!-- Section Classe -->
-											<li class="sidebar-item  {% if app.request.attributes.get('_route') starts with 'admin_studentclasse' %}active{% endif %}">
-												<a data-bs-target="#classe" data-bs-toggle="collapse" class="sidebar-link collapsed" aria-expanded="{% if app.request.attributes.get('_route') starts with 'admin_studentclasse' %}true{% else %}false{% endif %}">
+											<li class="sidebar-item  {% if app.request.attributes.get('_route') starts with 'app_secretariat_student_classes' %}active{% endif %}">
+												<a data-bs-target="#classe" data-bs-toggle="collapse" class="sidebar-link collapsed" aria-expanded="{% if app.request.attributes.get('_route') starts with 'app_secretariat_student_classes' %}true{% else %}false{% endif %}">
 													<svg class="bi me-2" width="16" height="16">
 														<use xlink:href=""></use>
 													</svg>
 													<span class="align-middle">Classe</span>
 												</a>
-												<ul id="classe" class="sidebar-dropdown list-unstyled collapse {% if app.request.attributes.get('_route') starts with 'admin_studentclasse' %}show{% endif %}">
-													<li class="sidebar-item  {% if app.request.attributes.get('_route') starts with 'admin_studentclasse_liste' %}active{% endif %}">
-														<a href="" class="sidebar-link">Voir les classes</a>
+												<ul id="classe" class="sidebar-dropdown list-unstyled collapse {% if app.request.attributes.get('_route') starts with 'app_secretariat_student_classes' %}show{% endif %}">
+													<li class="sidebar-item  {% if app.request.attributes.get('_route') starts with 'app_secretariat_student_classes_home' %}active{% endif %}">
+														<a href="{{ path('app_secretariat_student_classes_home') }}" class="sidebar-link">Voir les classes</a>
 													</li>
 													<li class="sidebar-item  {% if app.request.attributes.get('_route') starts with 'admin_studentclasse_create' %}active{% endif %}">
-														<a href="" class="sidebar-link">Ajouter une classe</a>
+														<a href="{{ path('app_secretariat_student_classes_create') }}" class="sidebar-link">Ajouter une classe</a>
 													</li>
 												</ul>
 											</li>
 											<!-- Section Discipline -->
-											<li class="sidebar-item  {% if app.request.attributes.get('_route') starts with 'admin_matiere_' %}active{% endif %}">
-												<a data-bs-target="#Disciplines" data-bs-toggle="collapse" class="sidebar-link collapsed" aria-expanded="{% if app.request.attributes.get('_route') starts with 'admin_matiere_' %}true{% else %}false{% endif %}">
+											<li class="sidebar-item  {% if app.request.attributes.get('_route') starts with 'app_secretariat_disciplines_' %}active{% endif %}">
+												<a data-bs-target="#Disciplines" data-bs-toggle="collapse" class="sidebar-link collapsed" aria-expanded="{% if app.request.attributes.get('_route') starts with 'app_secretariat_disciplines_' %}true{% else %}false{% endif %}">
 													<svg class="bi me-2" width="16" height="16">
 														<use xlink:href=""></use>
 													</svg>
 													<span class="align-middle">Disciplines</span>
 												</a>
-												<ul id="Disciplines" class="sidebar-dropdown list-unstyled collapse {% if app.request.attributes.get('_route') starts with 'admin_matiere_' %}show{% endif %}">
-													<li class="sidebar-item  {% if app.request.attributes.get('_route') starts with 'admin_matiere_liste' %}active{% endif %}">
-														<a href="" class="sidebar-link">Voir les Disciplines</a>
+												<ul id="Disciplines" class="sidebar-dropdown list-unstyled collapse {% if app.request.attributes.get('_route') starts with 'app_secretariat_disciplines_' %}show{% endif %}">
+													<li class="sidebar-item  {% if app.request.attributes.get('_route') starts with 'app_secretariat_disciplines_home' %}active{% endif %}">
+														<a href="{{ path('app_secretariat_disciplines_home') }}" class="sidebar-link">Voir les Disciplines</a>
 													</li>
-													<li class="sidebar-item  {% if app.request.attributes.get('_route') starts with 'admin_matiere_create' %}active{% endif %}">
-														<a href="" class="sidebar-link">Ajouter une Discipline</a>
+													<li class="sidebar-item  {% if app.request.attributes.get('_route') starts with 'app_secretariat_disciplines_create' %}active{% endif %}">
+														<a href="{{ path('app_secretariat_disciplines_create') }}" class="sidebar-link">Ajouter une Discipline</a>
 													</li>
 												</ul>
 											</li>
 											<!-- Section Salle -->
-											<li class="sidebar-item  {% if app.request.attributes.get('_route') starts with 'admin_salle_' %}active{% endif %}">
-												<a data-bs-target="#salles" data-bs-toggle="collapse" class="sidebar-link collapsed" aria-expanded="{% if app.request.attributes.get('_route') starts with 'admin_salle_' %}true{% else %}false{% endif %}">
+											<li class="sidebar-item  {% if app.request.attributes.get('_route') starts with 'app_secretariat_rooms_' %}active{% endif %}">
+												<a data-bs-target="#salles" data-bs-toggle="collapse" class="sidebar-link collapsed" aria-expanded="{% if app.request.attributes.get('_route') starts with 'app_secretariat_rooms_' %}true{% else %}false{% endif %}">
 													<svg class="bi me-2" width="16" height="16">
 														<use xlink:href=""></use>
 													</svg>
 													<span class="align-middle">Salles</span>
 												</a>
-												<ul id="salles" class="sidebar-dropdown list-unstyled collapse {% if app.request.attributes.get('_route') starts with 'admin_salle_' %}show{% endif %}">
-													<li class="sidebar-item  {% if app.request.attributes.get('_route') starts with 'admin_salle_liste' %}active{% endif %}">
-														<a href="" class="sidebar-link">Voir les salles</a>
+												<ul id="salles" class="sidebar-dropdown list-unstyled collapse {% if app.request.attributes.get('_route') starts with 'app_secretariat_rooms_' %}show{% endif %}">
+													<li class="sidebar-item  {% if app.request.attributes.get('_route') starts with 'app_secretariat_rooms_home' %}active{% endif %}">
+														<a href="{{ path('app_secretariat_rooms_home') }}" class="sidebar-link">Voir les salles</a>
 													</li>
-													<li class="sidebar-item  {% if app.request.attributes.get('_route') starts with 'admin_salle_create' %}active{% endif %}">
-														<a href="" class="sidebar-link">Ajouter une salle</a>
-													</li>
-													<li class="sidebar-item  {% if app.request.attributes.get('_route') starts with 'admin_salle_equipement_liste' %}active{% endif %}">
-														<a href="" class="sidebar-link">Voir les équipements</a>
-													</li>
-													<li class="sidebar-item  {% if app.request.attributes.get('_route') == 'admin_salle_equipement_create' %}active{% endif %}">
-														<a href="" class="sidebar-link">Ajouter des équipements</a>
+													<li class="sidebar-item  {% if app.request.attributes.get('_route') starts with 'app_secretariat_rooms_create' %}active{% endif %}">
+														<a href="{{ path('app_secretariat_rooms_create') }}" class="sidebar-link">Ajouter une salle</a>
 													</li>
 												</ul>
 											</li>
-											<!-- Section Notes -->
-											<li class="sidebar-item  {% if app.request.attributes.get('_route') starts with 'admin_resultats_' %}active{% endif %}">
-												<a data-bs-target="#notes" data-bs-toggle="collapse" class="sidebar-link collapsed" aria-expanded="{% if app.request.attributes.get('_route') starts with 'admin_resultats_' %}true{% else %}false{% endif %}">
+											{# <!-- Section Notes -->
+											<li class="sidebar-item  {% if app.request.attributes.get('_route') starts with 'app_secretariat_ratings_' %}active{% endif %}">
+												<a data-bs-target="#notes" data-bs-toggle="collapse" class="sidebar-link collapsed" aria-expanded="{% if app.request.attributes.get('_route') starts with 'app_secretariat_ratings_' %}true{% else %}false{% endif %}">
 													<svg class="bi me-2" width="16" height="16">
 														<use xlink:href=""></use>
 													</svg>
 													<span class="align-middle">Appréciations</span>
 												</a>
-												<ul id="notes" class="sidebar-dropdown list-unstyled collapse {% if app.request.attributes.get('_route') starts with 'admin_resultats_' %}show{% endif %}">
-													<li class="sidebar-item  {% if app.request.attributes.get('_route') starts with 'admin_resultats_liste' %}active{% endif %}">
-														<a href="" class="sidebar-link">Voir les appréciations</a>
+												<ul id="notes" class="sidebar-dropdown list-unstyled collapse {% if app.request.attributes.get('_route') starts with 'app_secretariat_ratings_' %}show{% endif %}">
+													<li class="sidebar-item  {% if app.request.attributes.get('_route') starts with 'app_secretariat_ratings_home' %}active{% endif %}">
+														<a href="{{ path('app_secretariat_ratings_home') }}" class="sidebar-link">Voir les appréciations</a>
 													</li>
-													<li class="sidebar-item  {% if app.request.attributes.get('_route') starts with 'admin_resultats_ajouter' %}active{% endif %}">
-														<a href="" class="sidebar-link">Ajouter une appréciation</a>
+													<li class="sidebar-item  {% if app.request.attributes.get('_route') starts with 'app_secretariat_ratings_home' %}active{% endif %}">
+														<a href="{{ path('app_secretariat_ratings_home') }}" class="sidebar-link">Ajouter une appréciation</a>
 													</li>
 												</ul>
 											</li>
@@ -207,7 +204,7 @@
 														</ul>
 													</li>
 												</ul>
-											</li>
+											</li> #}
 											<li class="sidebar-item {% if app.request.attributes.get('_route') starts with 'app_secretariat_lessons_' or  app.request.attributes.get('_route') starts with 'app_secretariat_programs_' %}active{% endif %}">
 												<a data-bs-target="#lecons" data-bs-toggle="collapse" class="sidebar-link collapsed" aria-expanded="{% if app.request.attributes.get('_route') starts with 'app_secretariat_lessons_' or  app.request.attributes.get('_route') starts with 'app_secretariat_programs_' %}true{% else %}false{% endif %}">
 													<svg class="bi me-2" width="16" height="16">

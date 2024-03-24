@@ -75,6 +75,10 @@
     </div>
     <div class="row mb-3">
         <div class="col">
+            {{ form_label(form.materials) }}
+            {{ form_widget(form.materials) }}
+        </div>
+        <div class="col">
             {{ form_row(form.room) }}
         </div>
         {{ form_row(form.zoom_link) }}
@@ -175,6 +179,10 @@
 			placeholder: "Souhaitez-vous ajouter une/des leçon(s) ?",
 			closeOnSelect: false
 		});
+		$('#courses_studentClasses').select2({
+			placeholder: "Sélectionner la ou les classes concerné(s)",
+			closeOnSelect: false
+		});
 
 		var studentClassSelect = $('#courses_studentClasses');
 		var studentsSelect = $('#courses_students');
@@ -188,7 +196,7 @@
 		// Écouter les changements sur le champ switch student
 		studentSwitchInput.on('change', function() {
 			if ($(this).is(':checked')) {
-				studentClassSelect.hide();
+				studentClassSelect.next('.select2-container').hide();
 				$('.label-studentClass').hide();
 
 				studentsSelect.next('.select2-container').show();
@@ -201,7 +209,7 @@
 				studentsSelect.next('.select2-container').hide();
 				$('.label-students').hide();
 
-				studentClassSelect.show();
+				studentClassSelect.next('.select2-container').show();
 				$('.label-studentClass').show();
 
 				// Vider le champ des élèves et réinitialiser sa valeur
@@ -291,7 +299,7 @@
 			// Récupérer la valeur du champ zoomlink
 
 			// Construire l'URL de l'API avec les paramètres appropriés
-			var apiUrl = '/agenda/cours/api/rooms';
+			var apiUrl = '/agenda/api/salles';
 			apiUrl += '?materials=' + selectedMaterials.join(',');
 			apiUrl += '&start=' + startValue;
 			apiUrl += '&duration=' + durationValue;

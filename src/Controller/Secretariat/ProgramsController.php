@@ -103,7 +103,6 @@ class ProgramsController extends AbstractController
             $entityManager->persist($programs);
             $entityManager->flush();
 
-            dump($programs->getSlug());
 
             return $this->redirectToRoute('app_secretariat_programs_home');
         }

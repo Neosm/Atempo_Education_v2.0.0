@@ -948,7 +948,6 @@ class CalendarController extends AbstractController
         $startDate = $firstEvent->getStart()->format('Ymd');
         $endDate = $lastEvent->getEnd()->format('Ymd');
         $userDateOfBirth = $user->getDateOfBirth()->format('Y-m-d');
-        dump($allEvents);
 
         // Générer le contenu du fichier iCalendar
         $content = "BEGIN:VCALENDAR\r\n";

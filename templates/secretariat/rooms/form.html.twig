@@ -1,0 +1,41 @@
+{% extends 'admin.html.twig' %}
+
+{% block title %}
+    {% if app.request.attributes.get('_route') == 'app_secretariat_rooms_create' %}
+        Créer une Salle
+    {% else %}
+        Éditer la Salle
+    {% endif %}
+{% endblock %}
+
+{% block body %}
+<div class="container">
+    <h1>
+        {% if app.request.attributes.get('_route') == 'app_secretariat_rooms_create' %}
+            Créer une Salle
+        {% else %}
+            Éditer la Salle
+        {% endif %}
+    </h1>
+    {{ form_start(form) }}
+    {{ form_row(form.name) }}
+    {{ form_row(form.equipments) }}
+
+    	{% if app.request.attributes.get('_route') == 'app_secretariat_rooms_edit' %}
+            <button type="submit" class="btn primary-custom-button">Modifier la salle</button>
+        {% else %}
+            <button type="submit" class="btn primary-custom-button">Créer la salle</button>
+	    {% endif %}
+
+
+	
+    {{ form_end(form) }}
+</div>
+{% endblock %}
+
+
+{% block javascripts %}
+<script>
+</script>
+
+{% endblock %}
