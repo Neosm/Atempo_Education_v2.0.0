@@ -1,34 +1,37 @@
 {% extends 'base.html.twig' %}
-
-{% block title %}Cours
-{% endblock %}
-
+{% block title %}Cours{% endblock %}
 
 {% block body %}
 	{% set today = "now"|date("Y-m-d H:i", 'Europe/Paris') %}
 	{% set nextEvents = [] %}
-
 	{% if not is_granted('ROLE_TEACHER') %}
 		{% for event in app.user.courses %}
 			{% if event.start|date("Y-m-d H:i") >= today %}
-				{% set nextEvents = nextEvents|merge([event]) %}
+				{% set nextEvents = nextEvents|merge([{ 'event': event, 'type': 'courses' }]) %}
 			{% endif %}
 		{% endfor %}
 		{% for event in app.user.events %}
 			{% if event.start|date("Y-m-d H:i") >= today %}
-				{% set nextEvents = nextEvents|merge([event]) %}
+				{% set nextEvents = nextEvents|merge([{ 'event': event, 'type': 'event' }]) %}
 			{% endif %}
 		{% endfor %}
 		{% for event in app.user.evaluations %}
 			{% if event.start|date("Y-m-d H:i") >= today %}
-				{% set nextEvents = nextEvents|merge([event]) %}
+				{% set nextEvents = nextEvents|merge([{ 'event': event, 'type': 'evaluations' }]) %}
 			{% endif %}
 		{% endfor %}
 		{% if app.user.studentClasses is not null %}
 			{% for studentClass in app.user.studentClasses %}
 				{% for event in studentClass.courses %}
 					{% if event.start|date("Y-m-d H:i") >= today %}
-						{% set nextEvents = nextEvents|merge([event]) %}
+						{% set nextEvents = nextEvents|merge([{ 'event': event, 'type': 'courses' }]) %}
+					{% endif %}
+				{% endfor %}
+			{% endfor %}
+			{% for studentClass in app.user.studentClasses %}
+				{% for event in studentClass.evaluations %}
+					{% if event.start|date("Y-m-d H:i") >= today %}
+						{% set nextEvents = nextEvents|merge([{ 'event': event, 'type': 'evaluations' }]) %}
 					{% endif %}
 				{% endfor %}
 			{% endfor %}
@@ -36,224 +39,206 @@
 	{% elseif is_granted('ROLE_TEACHER') %}
 		{% for event in app.user.coursesteacher %}
 			{% if event.start|date("Y-m-d H:i") >= today %}
-				{% set nextEvents = nextEvents|merge([event]) %}
+				{% set nextEvents = nextEvents|merge([{ 'event': event, 'type': 'courses' }]) %}
 			{% endif %}
 		{% endfor %}
 		{% for event in app.user.events %}
 			{% if event.start|date("Y-m-d H:i") >= today %}
-				{% set nextEvents = nextEvents|merge([event]) %}
+				{% set nextEvents = nextEvents|merge([{ 'event': event, 'type': 'event' }]) %}
 			{% endif %}
 		{% endfor %}
 		{% for event in app.user.evaluationsteacher %}
 			{% if event.start|date("Y-m-d H:i") >= today %}
-				{% set nextEvents = nextEvents|merge([event]) %}
+				{% set nextEvents = nextEvents|merge([{ 'event': event, 'type': 'evaluations' }]) %}
 			{% endif %}
 		{% endfor %}
-		{% if app.user.studentClasses is not null %}
-			{% for studentClass in app.user.studentClasses %}
-				{% for event in studentClass.courses %}
-					{% if event.start|date("Y-m-d H:i") >= today %}
-						{% set nextEvents = nextEvents|merge([event]) %}
-					{% endif %}
-				{% endfor %}
-			{% endfor %}
-		{% endif %}
 	{% endif %}
 	<div class="container-fluid">
-		<div
-			class="row">
+		<div class="row">
 			<!-- Colonne de gauche -->
-			<div
-				class="col-md-7 m-4 mt-5">
+			<div class="col-md-7 m-4 mt-5">
 				<!-- Boutons arrondis -->
 				<div class="d-flex">
-					<a href="{{ path('app_courses') }}" class="btn secondary-custom-button flex-fill mx-2 mb-5 p-3 mt-0 active">
-						Cours
-					</a>
-					<a href="{{ path('app_lessons_home') }}" class="btn secondary-custom-button flex-fill mx-2 mb-5 p-3 mt-0">
-						Leçons
-					</a>
-					<a href="{{ path('app_programs_home') }}" class="btn secondary-custom-button flex-fill mx-2 mb-5 p-3 mt-0 ">
-						Programmes
-					</a>
+					<a href="{{ path('app_courses') }}" class="btn secondary-custom-button flex-fill mx-2 mb-5 p-3 mt-0 active">Cours</a>
+					<a href="{{ path('app_lessons_home') }}" class="btn secondary-custom-button flex-fill mx-2 mb-5 p-3 mt-0">Leçons</a>
+					<a href="{{ path('app_programs_home') }}" class="btn secondary-custom-button flex-fill mx-2 mb-5 p-3 mt-0">Programmes</a>
 				</div>
 				<!-- Carte pour le contenu "Élèves" -->
 				<div class="card mb-4 card-shadow" style="border-radius: 15px;">
 					<div class="card-body p-4 pb-0 text-black">
-						<div>
-							<div class="d-flex justify-content-between align-items-center mb-4 ">
-								<h2 class="primary-color font-weight-bold h3">
-									<i class="bi bi-music-note"></i>
-									MES PROCHAINS COURS
-								</h2>
-								<a href="{{ path('app_calendar_courses_add') }}" class="btn primary-custom-button rounded-pill align-self-center">
-									<i class="bi bi-plus"></i>
-									Ajouter un cours
-								</a>
-							</div>
-							<div class="d-flex align-items-center justify-content-between mb-3 border-top"></div>
-							{% set nextEvents = nextEvents|sort((a, b) => a.start <=> b.start) %}
-							{% set count = 0 %}
-							{% if nextEvents|length > 0 %}
-								{% for event in nextEvents %}
-									{% if event.studentclasses is empty and event.students|length == 1 and count <= 2 %}
-										<a href="" class="text-black-50">
-											<div class="d-flex align-items-center mb-3">
-												{% for student in event.students %}
-													<div class="flex-shrink-0">
-														<img src="{{ asset('/uploads/profile_pics/' ~ student.thumbnail) }}" alt="Generic placeholder image" class="img-fluid rounded-circle shadow" style="width: 70px;">
-													</div>
-													<div class="flex-grow-1 ms-3">
-														<div class="align-items-center mb-0 ms-4">
-															<p class="">{{ student.firstname }}
-																{{ student.lastname }}</p>
-														</div>
-													</div>
-													<div class="flex-grow-1 ms-3">
-														<div class="align-items-center mb-0 ms-4">
-															<p class="text-muted text-secondary mb-0">Prochain cours individuel le
-																{{ event.start|format_datetime(pattern="dd MMM HH:mm") }}
-															</p>
-															{% if event.room is not null %}
-												Salle :
-												{{ event.room.name }}</span>
-										{% elseif event.zoomlink is not null %}
-											A distanciel :
-											<a href="{{ event.zoomlink }}" target="_blank" rel="noopener noreferrer">Lien Zoom</a>
-										{% endif %}
-
-															<p></p>
-														</div>
-													</div>
-												{% endfor %}
-											</div>
-										</a>
-										{% set count = count + 1 %}
-									{% endif %}
-								{% endfor %}
-							{% else %}
-								Aucun prochain cours pour le moment. Revenez plus tard.
-							{% endif %}
-						</div>
-						<div class="border-top">
-							<a href="{{ path('app_calendar_home') }}">
-								<p class="my-4 pb-1 text-center fw-bold fs-5">Tous mes cours</p>
+					<div>
+						<div class="d-flex justify-content-between align-items-center mb-4 ">
+							<h2 class="primary-color font-weight-bold h3">
+								<i class="bi bi-music-note"></i>
+								MES PROCHAINS COURS
+							</h2>
+							<a href="{{ path('app_calendar_courses_add') }}" class="btn primary-custom-button rounded-pill align-self-center">
+							<i class="bi bi-plus"></i>
+							Ajouter un cours
 							</a>
 						</div>
+						<div class="d-flex align-items-center justify-content-between mb-3 border-top"></div>
+						{% set nextEvents = nextEvents|sort((a, b) => a.event.start <=> b.event.start) %}
+						{% set count = 0 %}
+						{% if nextEvents|length > 0 %}
+						{% for event in nextEvents %}
+						{% if event.type is not same as('event') and event.event.studentclasses is empty and event.event.students|length == 1 and count <= 2 %}
+						<a href="" class="text-black-50">
+							<div class="d-flex align-items-center mb-3">
+								{% for student in event.event.students %}
+								<div class="flex-shrink-0">
+								<img src="{{ asset('/uploads/profile_pics/' ~ student.thumbnail) }}" alt="Generic placeholder image" class="img-fluid rounded-circle shadow" style="width: 70px;">
+								</div>
+								<div class="flex-grow-1 ms-3">
+								<div class="align-items-center mb-0 ms-4">
+									<p class="">{{ student.firstname }}
+										{{ student.lastname }}
+									</p>
+								</div>
+								</div>
+								<div class="flex-grow-1 ms-3">
+								<div class="align-items-center mb-0 ms-4">
+									<p class="text-muted text-secondary mb-0">Prochain cours individuel le
+										{{ event.event.start|format_datetime(pattern="dd MMM HH:mm") }}
+									</p>
+									{% if event.event.room is not null %}
+									Salle :
+									{{ event.event.room.name }}
+									{% elseif event.event.zoomlink is not null %}
+									A distanciel :
+						<a href="{{ event.event.zoomlink }}" target="_blank" rel="noopener noreferrer">Lien Zoom</a>
+						{% endif %}
+						</div>
+						</div>
+						{% endfor %}
+						</div>
+						</a>
+						{% set count = count + 1 %}
+						{% endif %}
+						{% endfor %}
+						{% else %}
+						Aucun prochain cours pour le moment. Revenez plus tard.
+						{% endif %}
+					</div>
+					<div class="border-top">
+						<a href="{{ path('app_calendar_home') }}">
+							<p class="my-4 pb-1 text-center fw-bold fs-5">Tous mes cours</p>
+						</a>
+					</div>
 					</div>
 				</div>
 				<!-- Carte pour le contenu "Actualité" -->
 				<div class="card mb-4 card-shadow" style="border-radius: 15px;">
 					<div class="card-body p-4 pb-0 text-black">
-						<div>
-							<div class="d-flex justify-content-between align-items-center mb-4 ">
-								<h2 class="primary-color font-weight-bold h3">
-									<i class="bi bi-file-earmark-text-fill h3 me-1"></i>
-									MES LEÇONS
-								</h2>
-								{% if is_granted('ROLE_TEACHER') %}
-									<a href="{{ path('app_lessons_add') }}" class="btn primary-custom-button rounded-pill align-self-center">
-										<i class="bi bi-plus"></i>
-										Ajouter une leçon
-									</a>
-								{% endif %}
-							</div>
-							<div class="d-flex align-items-center justify-content-between mb-3 border-top"></div>
-							{% set count = 0 %}
-							{% for lesson in lessons |sort((a, b) => b.createdAt <=> a.createdAt) %}
-								{% if lesson == app.user.lessons or lesson.type == 1 and count <= 2 %}
-									<div class="row g-0">
-										<div class="col-md-4">
-											<img src="{{ asset('/uploads/lessons/images/' ~ lesson.thumnail) }}" alt="Atempo-Education | {{ lesson.thumnail }}" class="img-fluid rounded-start">
-										</div>
-										<div class="col-md-8">
-											<div class="card-body">
-												<a href="{{ path('app_lessons_details', {slug: lesson.slug}) }}" class="text-decoration-none">
-													<h3 class="card-title h5">{{ lesson.name }}</h3>
-													<p class="card-text text-dark">{{ lesson.content|striptags|u.truncate(75, '...')|raw }}</p>
-												</a>
-												<p class="card-text">
-													{% if lesson.lessonsPdfs is not empty %}
-														<i class="bi bi-file-earmark-pdf primary-color" style="font-size: 2rem;"></i>
-													{% else %}
-														<i class="bi bi-file-earmark-pdf text-muted" style="font-size: 2rem;"></i>
-													{% endif %}
-													{% if lesson.lessonsAudios is not empty %}
-														<i class="bi bi-volume-up-fill primary-color " style="font-size: 2rem;"></i>
-													{% else %}
-														<i class="bi bi-volume-up-fill text-muted" style="font-size: 2rem;"></i>
-													{% endif %}
-													{% if lesson.lessonsVideos is not empty %}
-														<i class="bi bi-camera-video-fill primary-color" style="font-size: 2rem;"></i>
-													{% else %}
-														<i class="bi bi-camera-video-fill text-muted" style="font-size: 2rem;"></i>
-													{% endif %}
-													<a href="{{ path('app_lessons_details', {slug: lesson.slug}) }}" class="btn third-custom-button float-end">
-														Voir la leçon
-													</a>
-												</p>
-											</div>
-										</div>
-									</div>
-								{% endif %}
-								{% set count = count + 1 %}
-							{% endfor %}
-						</div>
-
-						<div class="border-top">
-							<a href="{{ path('app_lessons_home') }}">
-								<p class="my-4 pb-1 text-center fw-bold fs-5">Toutes mes leçons</p>
+					<div>
+						<div class="d-flex justify-content-between align-items-center mb-4 ">
+							<h2 class="primary-color font-weight-bold h3">
+								<i class="bi bi-file-earmark-text-fill h3 me-1"></i>
+								MES LEÇONS
+							</h2>
+							{% if is_granted('ROLE_TEACHER') %}
+							<a href="{{ path('app_lessons_add') }}" class="btn primary-custom-button rounded-pill align-self-center">
+							<i class="bi bi-plus"></i>
+							Ajouter une leçon
 							</a>
+							{% endif %}
 						</div>
+						<div class="d-flex align-items-center justify-content-between mb-3 border-top"></div>
+						{% set count = 0 %}
+						{% for lesson in lessons |sort((a, b) => b.createdAt <=> a.createdAt) %}
+						{% if lesson == app.user.lessons or lesson.type == 1 and count <= 2 %}
+						<div class="row g-0">
+							<div class="col-md-4">
+								<img src="{{ asset('/uploads/lessons/images/' ~ lesson.thumnail) }}" alt="Atempo-Education | {{ lesson.thumnail }}" class="img-fluid rounded-start">
+							</div>
+							<div class="col-md-8">
+								<div class="card-body">
+								<a href="{{ path('app_lessons_details', {slug: lesson.slug}) }}" class="text-decoration-none">
+									<h3 class="card-title h5">{{ lesson.name }}</h3>
+									<p class="card-text text-dark">{{ lesson.content|striptags|u.truncate(75, '...')|raw }}</p>
+								</a>
+								<p class="card-text">
+									{% if lesson.lessonsPdfs is not empty %}
+									<i class="bi bi-file-earmark-pdf primary-color" style="font-size: 2rem;"></i>
+									{% else %}
+									<i class="bi bi-file-earmark-pdf text-muted" style="font-size: 2rem;"></i>
+									{% endif %}
+									{% if lesson.lessonsAudios is not empty %}
+									<i class="bi bi-volume-up-fill primary-color " style="font-size: 2rem;"></i>
+									{% else %}
+									<i class="bi bi-volume-up-fill text-muted" style="font-size: 2rem;"></i>
+									{% endif %}
+									{% if lesson.lessonsVideos is not empty %}
+									<i class="bi bi-camera-video-fill primary-color" style="font-size: 2rem;"></i>
+									{% else %}
+									<i class="bi bi-camera-video-fill text-muted" style="font-size: 2rem;"></i>
+									{% endif %}
+									<a href="{{ path('app_lessons_details', {slug: lesson.slug}) }}" class="btn third-custom-button float-end">
+									Voir la leçon
+									</a>
+								</p>
+								</div>
+							</div>
+						</div>
+						{% endif %}
+						{% set count = count + 1 %}
+						{% endfor %}
+					</div>
+					<div class="border-top">
+						<a href="{{ path('app_lessons_home') }}">
+							<p class="my-4 pb-1 text-center fw-bold fs-5">Toutes mes leçons</p>
+						</a>
+					</div>
 					</div>
 				</div>
 				<div class="card mb-4 card-shadow" style="border-radius: 15px;">
 					<div class="card-body p-4 pb-0 text-black">
-						<div>
-							<div class="d-flex justify-content-between align-items-center mb-4 ">
-								<h2 class="primary-color font-weight-bold h3">
-									<i class="bi bi-folder-fill h3 me-1"></i>
-									MES PROGRAMMES
-								</h2>
-								{% if is_granted('ROLE_TEACHER') %}
-									<a href="{{ path('app_programs_add') }}" class="btn primary-custom-button rounded-pill align-self-center">
-										<i class="bi bi-plus"></i>
-										Ajouter un programme
-									</a>
-								{% endif %}
-							</div>
-							<div class="d-flex align-items-center justify-content-between mb-3 border-top"></div>
-						</div>
-						{% set count = 0 %}
-						{% if programs is not empty %}
-							{% for program in programs |sort((a, b) => b.id <=> a.id) %}
-								{% if program in app.user.programs or program.type == 1 and count <= 2 %}
-									<div class="row g-0 mb-2">
-										<div class="col-md-4">
-											<img src="{{ asset('/uploads/programs/images/' ~ program.thumbnail) }}" alt="Atempo-Education | {{ program.thumbnail }}" class="img-fluid rounded-start">
-										</div>
-										<div class="col-md-8">
-											<div class="card-body">
-												<a href="{{ path('app_programs_details', {slug: program.slug}) }}" class="text-decoration-none">
-													<h3 class="card-title h5">{{ program.name }}
-														({{ program.lessons|length }}
-														leçons)</h3>
-												</a>
-												<a href="{{ path('app_programs_details', {slug: program.slug}) }}" class="btn third-custom-button">
-													Voir le programme
-												</a>
-											</div>
-										</div>
-									</div>
-								{% endif %}
-								{% set count = count + 1 %}
-							{% endfor %}
-						{% endif %}
-						<div class="border-top">
-							<a href="{{ path('app_programs_home') }}">
-								<p class="my-4 pb-1 text-center fw-bold fs-5">Tous mes programmes</p>
+					<div>
+						<div class="d-flex justify-content-between align-items-center mb-4 ">
+							<h2 class="primary-color font-weight-bold h3">
+								<i class="bi bi-folder-fill h3 me-1"></i>
+								MES PROGRAMMES
+							</h2>
+							{% if is_granted('ROLE_TEACHER') %}
+							<a href="{{ path('app_programs_add') }}" class="btn primary-custom-button rounded-pill align-self-center">
+							<i class="bi bi-plus"></i>
+							Ajouter un programme
 							</a>
+							{% endif %}
 						</div>
+						<div class="d-flex align-items-center justify-content-between mb-3 border-top"></div>
+					</div>
+					{% set count = 0 %}
+					{% if programs is not empty %}
+					{% for program in programs |sort((a, b) => b.id <=> a.id) %}
+					{% if program in app.user.programs or program.type == 1 and count <= 2 %}
+					<div class="row g-0 mb-2">
+						<div class="col-md-4">
+							<img src="{{ asset('/uploads/programs/images/' ~ program.thumbnail) }}" alt="Atempo-Education | {{ program.thumbnail }}" class="img-fluid rounded-start">
+						</div>
+						<div class="col-md-8">
+							<div class="card-body">
+								<a href="{{ path('app_programs_details', {slug: program.slug}) }}" class="text-decoration-none">
+								<h3 class="card-title h5">{{ program.name }}
+									({{ program.lessons|length }}
+									leçons)
+								</h3>
+								</a>
+								<a href="{{ path('app_programs_details', {slug: program.slug}) }}" class="btn third-custom-button">
+								Voir le programme
+								</a>
+							</div>
+						</div>
+					</div>
+					{% endif %}
+					{% set count = count + 1 %}
+					{% endfor %}
+					{% endif %}
+					<div class="border-top">
+						<a href="{{ path('app_programs_home') }}">
+							<p class="my-4 pb-1 text-center fw-bold fs-5">Tous mes programmes</p>
+						</a>
+					</div>
 					</div>
 				</div>
 			</div>
@@ -263,79 +248,84 @@
 				<!-- Première boîte de droite -->
 				<div class="card mb-4 card-shadow" style="border-radius: 15px;">
 					<div class="card-body p-4 pb-0 text-black">
-						<div>
-							<h2 class="mb-4 primary-color font-weight-bold h3">
-								<i class="bi bi-calendar3 h3 me-1"></i>
-								AGENDA</h2>
-							<div class="d-flex align-items-center justify-content-between mb-3 border-top"></div>
-						</div>
-						{% set nextEvents = nextEvents|sort((a, b) => a.start <=> b.start)|slice(0, 3) %}
-						{% if nextEvents|length > 0 %}
-							{% for event in nextEvents %}
-								<a href="{{ path('app_calendar_courses_details',{id: event.id}) }}" style="color: {{ event.textcolor }}!important" class="">
-									<div class="card mb-3" style="border-radius: 25px;">
-										<div class="card-body p-4" style="border-radius: 25px; background: {{ event.backgroundcolor }}!important">
-											<h3 class="mb-3 h4" style="border-radius: 15px; color: {{ event.textcolor }}!important">{{ event.name }}</h3>
-											<p class="small mb-0" style="color: {{ event.textcolor }}!important">
-												{{ event.start|format_datetime(pattern="eeee d MMM à HH'h'mm") }}
-												<span class="mx-2">|</span>
-												{% if event.room is not null %}
-													Salle :
-													{{ event.room.name }}</span>
-											{% elseif event.zoomlink is not null %}
-												A distanciel :
-												<a href="{{ event.zoomlink }}" target="_blank" rel="noopener noreferrer">Lien Zoom</a>
-											{% endif %}
-										</p>
-									</div>
-								</div>
-							</a>
-						{% endfor %}
+					<div>
+						<h2 class="mb-4 primary-color font-weight-bold h3">
+							<i class="bi bi-calendar3 h3 me-1"></i>
+							AGENDA
+						</h2>
+						<div class="d-flex align-items-center justify-content-between mb-3 border-top"></div>
+					</div>
+					{% set nextEvents = nextEvents|sort((a, b) => a.event.start <=> b.event.start)|slice(0, 3) %}
+					{% if nextEvents|length > 0 %}
+					{% for event in nextEvents %}
+					<a href="
+						{% if event.type == 'courses' %} {{ path('app_calendar_courses_details',{id: event.event.id}) }}
+						{% elseif event.type == 'event' %} {{ path('app_calendar_event_details',{id: event.event.id}) }}
+						{% elseif event.type == 'evaluations' %} {{ path('app_calendar_evaluation_details',{id: event.event.id}) }} {% endif %}" style="color: {{ event.event.textcolor }}!important" class="">
+						<div class="card mb-3" style="border-radius: 25px;">
+							<div class="card-body p-4" style="border-radius: 25px; background: {{ event.event.backgroundcolor }}!important">
+								<h3 class="mb-3 h4" style="border-radius: 15px; color: {{ event.event.textcolor }}!important">{{ event.event.name }}</h3>
+								<p class="small mb-0" style="color: {{ event.event.textcolor }}!important">
+								{{ event.event.start|format_datetime(pattern="eeee d MMM à HH'h'mm") }}
+								<span class="mx-2">|</span>
+								{% if event.event.room is not null %}
+								Salle :
+								{{ event.event.room.name }}</span>
+								{% elseif event.event.zoomlink is not null %}
+								A distanciel :
+					<a href="{{ event.event.zoomlink }}" target="_blank" rel="noopener noreferrer">Lien Zoom</a>
+					{% endif %}
+					</p>
+					</div>
+					</div>
+					</a>
+					{% endfor %}
 					{% else %}
-						Aucun prochain cours pour le moment. Revenez plus tard.
+					Aucun prochain cours pour le moment. Revenez plus tard.
 					{% endif %}
 					<div class="border-top"></div>
 					<a href="{{ path('app_calendar_home') }}">
 						<p class="my-4 pb-1 text-center fw-bold fs-5">Tout mon agenda</p>
 					</a>
-				</div>
-			</div>
-			<div class="card mb-4 card-shadow" style="border-radius: 15px;">
-				<div class="card-body p-4 pb-0 text-black">
-					<div>
-						<h2 class="mb-4 primary-color font-weight-bold h3">
-							<i class="bi bi-calendar3 h3 me-1"></i>
-							ÉVALUATIONS</h2>
-						<div class="d-flex align-items-center justify-content-between mb-3 border-top"></div>
 					</div>
-					{% set nextEvents = nextEvents|sort((a, b) => a.start <=> b.start)|slice(0, 3) %}
-					{% if nextEvents|length > 0 %}
-						{% for event in nextEvents %}
-							{% if event in app.user.evaluations or event in app.user.evaluationsteacher %}
-								<a href="" class="text-black-50">
-									<div class="card mb-3" style="border-radius: 15px;">
-										<div class="card-body p-4">
-											<h3 class="mb-3 primary-color h4">{{ event.name }}</h3>
-											<p class="small mb-0">
-												{{ event.start|format_datetime(pattern="eeee d MMM à HH'h'mm") }}
+				</div>
+				<div class="card mb-4 card-shadow" style="border-radius: 15px;">
+					<div class="card-body p-4 pb-0 text-black">
+						<div>
+							<h2 class="mb-4 primary-color font-weight-bold h3">
+								<i class="bi bi-calendar3 h3 me-1"></i>
+								ÉVALUATIONS
+							</h2>
+							<div class="d-flex align-items-center justify-content-between mb-3 border-top"></div>
+						</div>
+						{% set nextEvents = nextEvents|sort((a, b) => a.event.start <=> b.event.start)|slice(0, 3) %}
+						{% if nextEvents|length > 0 %}
+							{% for event in nextEvents %}
+								{% if event.event in app.user.evaluations or event.event in app.user.evaluationsteacher %}
+									<a href="{{ path('app_calendar_evaluation_details',{id: event.event.id}) }}" class="text-black-50">
+										<div class="card mb-3" style="border-radius: 15px;">
+											<div class="card-body p-4">
+												<h3 class="mb-3 primary-color h4">{{ event.event.name }}</h3>
+												<p class="small mb-0">
+												{{ event.event.start|format_datetime(pattern="eeee d MMM à HH'h'mm") }}
 												<span class="mx-2">|</span>
-												Salle :{{ event.room.name }}
-											</p>
+												Salle :{{ event.event.room.name }}
+												</p>
+											</div>
 										</div>
-									</div>
-								</a>
-							{% endif %}
-						{% endfor %}
-					{% else %}
-						Aucun prochain cours pour le moment. Revenez plus tard.
-					{% endif %}
-					<div class="border-top"></div>
-					<a href="{{ path('app_calendar_home') }}">
-						<p class="my-4 pb-1 text-center fw-bold fs-5">Toutes mes évaluations</p>
-					</a>
+									</a>
+								{% endif %}
+							{% endfor %}
+						{% else %}
+							Aucun prochain examen pour le moment. Revenez plus tard.
+						{% endif %}
+						<div class="border-top"></div>
+						<a href="{{ path('app_calendar_home') }}">
+							<p class="my-4 pb-1 text-center fw-bold fs-5">Toutes mes évaluations</p>
+						</a>
+					</div>
 				</div>
 			</div>
 		</div>
 	</div>
-</div>{% endblock %}
-
+{% endblock %}

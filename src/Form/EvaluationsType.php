@@ -28,6 +28,8 @@ class EvaluationsType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $ecole = $options['ecole'];
+        $isAdminRoute = $options['isAdminRoute'];
+        $user = $options['user'];
         $builder
             ->add('discipline', EntityType::class, [
                 'class' => Disciplines::class,
@@ -76,7 +78,7 @@ class EvaluationsType extends AbstractType
                 'class' => Rooms::class,
                 'placeholder' => 'Choisir une salle pour le cours',
                 'choice_label' => 'name',
-                'required' => false,
+                'required' => true,
                 'label' => 'Salle',
                 'query_builder' => function (EntityRepository $er) use ($ecole) {
                     return $er->createQueryBuilder('r')
@@ -117,7 +119,7 @@ class EvaluationsType extends AbstractType
                 },
                 'placeholder' => "Choisissez la classe à laquelle vous faites cours",
                 'attr' => [
-                    'class' => 'student-class-field form-control'
+                    'class' => 'student-class-field '
                 ],
                 'label_attr' => [
                     'class' => 'label-studentClass',
@@ -138,7 +140,7 @@ class EvaluationsType extends AbstractType
                 'multiple' => true,
                 'required' => false,
                 'attr' => [
-                    'class' => 'students-field form-control'
+                    'class' => 'students-field '
                 ],
                 'label_attr' => [
                     'class' => 'label-students',
@@ -147,18 +149,62 @@ class EvaluationsType extends AbstractType
             ->add('teacher', EntityType::class, [
                 'label' => 'Professeur',
                 'class' => Users::class,
-                'query_builder' => function (EntityRepository $er) use ($ecole) {
-                    return $er->createQueryBuilder('u')
-                    ->join('u.school', 'e')
-                    ->andWhere('u.roles LIKE :val')
-                    ->andWhere('e.id = :ecoleId')
-                    ->setParameter('val', '%["ROLE_TEACHER"]%')
-                    ->setParameter('ecoleId', $ecole->getId());
-            },
+                'query_builder' => function (EntityRepository $er) use ($ecole, $isAdminRoute, $user) {
+                    $qb = $er->createQueryBuilder('u')
+                        ->join('u.school', 'e')
+                        ->andWhere('e.id = :ecoleId')
+                        ->setParameter('ecoleId', $ecole->getId());
+
+                    if ($isAdminRoute) {
+                        // Si vous êtes sur la route administrateur, permettre de choisir parmi tous les professeurs
+                        $qb->andWhere('u.roles LIKE :val')
+                            ->setParameter('val', '%["ROLE_TEACHER"]%');
+                    } else {
+                        // Si vous êtes sur la route Professeur, désactiver le champ et limiter le choix à votre utilisateur
+                        $qb->andWhere('u.id = :userId')
+                            ->setParameter('userId', $user->getId());
+                    }
+
+                    return $qb;
+                },
                 'choice_label' => 'UserIdentifier',
                 'attr' => [
                     'class' => 'form-control',
+                    'disabled' => $isAdminRoute ? false : 'disabled',
                 ]
+            ])
+            ->add('program', EntityType::class, [
+                'label' => 'Programmes',
+                'class' => Programs::class,
+                'query_builder' => function (EntityRepository $er) use ($ecole) {
+                    return $er->createQueryBuilder('p')
+                        ->join('p.school', 'ec')
+                        ->andWhere('ec.id = :ecole')
+                        ->setParameter('ecole', $ecole);
+                },
+                'choice_label' => 'name',
+                'attr' => [
+                    'class' => 'programmes-field'
+                ],
+                'multiple' => true,
+                'required' => false,
+            ])
+            ->add('lesson', EntityType::class, [
+                'label' => 'Leçons',
+                'placeholder' => "Souhaitez-vous ajouter une/des leçon(s) ?",
+                'class' => Lessons::class,
+                'query_builder' => function (EntityRepository $er) use ($ecole) {
+                    return $er->createQueryBuilder('l')
+                        ->join('l.school', 'ec')
+                        ->andWhere('ec.id = :ecole')
+                        ->setParameter('ecole', $ecole);
+                },
+                'choice_label' => 'name',
+                'attr' => [
+                    'class' => 'lecons-field'
+                ],
+                'multiple' => true,
+                'required' => false,
             ])
             ->add('reservedRooms', HiddenType::class, [
                 'mapped' => false,
@@ -206,6 +252,8 @@ class EvaluationsType extends AbstractType
         $resolver->setDefaults([
             'data_class' => Evaluations::class,
             'ecole' => null,
+            'isAdminRoute' => false, // Par défaut, vous n'êtes pas sur la route administrateur
+            'user' => null, // Utilisateur pour la route Professeur
         ]);
     }
 }

@@ -86,7 +86,7 @@ class AccountController extends AbstractController
             }else {
                 $this->addFlash('message_alert',"Vos informations n'ont pas pu être mis à jour");
             }
-            return $this->redirectToRoute('users');
+            return $this->redirectToRoute('app_account_home');
         }
 
         return $this->render('account/information.html.twig',[

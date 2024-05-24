@@ -6,28 +6,34 @@
 {% block body %}
 	{% set today = "now"|date("Y-m-d H:i", 'Europe/Paris') %}
 	{% set nextEvents = [] %}
-
 	{% if not is_granted('ROLE_TEACHER') %}
 		{% for event in app.user.courses %}
 			{% if event.start|date("Y-m-d H:i") >= today %}
-				{% set nextEvents = nextEvents|merge([event]) %}
+				{% set nextEvents = nextEvents|merge([{ 'event': event, 'type': 'courses' }]) %}
 			{% endif %}
 		{% endfor %}
 		{% for event in app.user.events %}
 			{% if event.start|date("Y-m-d H:i") >= today %}
-				{% set nextEvents = nextEvents|merge([event]) %}
+				{% set nextEvents = nextEvents|merge([{ 'event': event, 'type': 'event' }]) %}
 			{% endif %}
 		{% endfor %}
 		{% for event in app.user.evaluations %}
 			{% if event.start|date("Y-m-d H:i") >= today %}
-				{% set nextEvents = nextEvents|merge([event]) %}
+				{% set nextEvents = nextEvents|merge([{ 'event': event, 'type': 'evaluations' }]) %}
 			{% endif %}
 		{% endfor %}
 		{% if app.user.studentClasses is not null %}
 			{% for studentClass in app.user.studentClasses %}
 				{% for event in studentClass.courses %}
 					{% if event.start|date("Y-m-d H:i") >= today %}
-						{% set nextEvents = nextEvents|merge([event]) %}
+						{% set nextEvents = nextEvents|merge([{ 'event': event, 'type': 'courses' }]) %}
+					{% endif %}
+				{% endfor %}
+			{% endfor %}
+			{% for studentClass in app.user.studentClasses %}
+				{% for event in studentClass.evaluations %}
+					{% if event.start|date("Y-m-d H:i") >= today %}
+						{% set nextEvents = nextEvents|merge([{ 'event': event, 'type': 'evaluations' }]) %}
 					{% endif %}
 				{% endfor %}
 			{% endfor %}
@@ -35,28 +41,19 @@
 	{% elseif is_granted('ROLE_TEACHER') %}
 		{% for event in app.user.coursesteacher %}
 			{% if event.start|date("Y-m-d H:i") >= today %}
-				{% set nextEvents = nextEvents|merge([event]) %}
+				{% set nextEvents = nextEvents|merge([{ 'event': event, 'type': 'courses' }]) %}
 			{% endif %}
 		{% endfor %}
 		{% for event in app.user.events %}
 			{% if event.start|date("Y-m-d H:i") >= today %}
-				{% set nextEvents = nextEvents|merge([event]) %}
+				{% set nextEvents = nextEvents|merge([{ 'event': event, 'type': 'event' }]) %}
 			{% endif %}
 		{% endfor %}
 		{% for event in app.user.evaluationsteacher %}
 			{% if event.start|date("Y-m-d H:i") >= today %}
-				{% set nextEvents = nextEvents|merge([event]) %}
+				{% set nextEvents = nextEvents|merge([{ 'event': event, 'type': 'evaluations' }]) %}
 			{% endif %}
 		{% endfor %}
-		{% if app.user.studentClasses is not null %}
-			{% for studentClass in app.user.studentClasses %}
-				{% for event in studentClass.courses %}
-					{% if event.start|date("Y-m-d H:i") >= today %}
-						{% set nextEvents = nextEvents|merge([event]) %}
-					{% endif %}
-				{% endfor %}
-			{% endfor %}
-		{% endif %}
 	{% endif %}
 	<div class="container-fluid">
 		<div
@@ -176,22 +173,25 @@
 							AGENDA</h2>
 						<div class="d-flex align-items-center justify-content-between mb-3 border-top"></div>
 					</div>
-					{% set nextEvents = nextEvents|sort((a, b) => a.start <=> b.start)|slice(0, 3) %}
+					{% set nextEvents = nextEvents|sort((a, b) => a.event.start <=> b.event.start)|slice(0, 3) %}
 					{% if nextEvents|length > 0 %}
 						{% for event in nextEvents %}
-							<a href="{{ path('app_calendar_courses_details',{id: event.id}) }}" style="color: {{ event.textcolor }}!important" class="">
+							<a href="
+														{% if event.type == 'courses' %} {{ path('app_calendar_courses_details',{id: event.event.id}) }}
+														{% elseif event.type == 'event' %} {{ path('app_calendar_event_details',{id: event.event.id}) }}
+														{% elseif event.type == 'evaluations' %} {{ path('app_calendar_evaluation_details',{id: event.event.id}) }} {% endif %}" style="color: {{ event.event.textcolor }}!important" class="">
 								<div class="card mb-3" style="border-radius: 25px;">
-									<div class="card-body p-4" style="border-radius: 25px; background: {{ event.backgroundcolor }}!important">
-										<h3 class="mb-3 h4" style="border-radius: 15px; color: {{ event.textcolor }}!important">{{ event.name }}</h3>
-										<p class="small mb-0" style="color: {{ event.textcolor }}!important">
-											{{ event.start|format_datetime(pattern="eeee d MMM à HH'h'mm") }}
+									<div class="card-body p-4" style="border-radius: 25px; background: {{ event.event.backgroundcolor }}!important">
+										<h3 class="mb-3 h4" style="border-radius: 15px; color: {{ event.event.textcolor }}!important">{{ event.event.name }}</h3>
+										<p class="small mb-0" style="color: {{ event.event.textcolor }}!important">
+											{{ event.event.start|format_datetime(pattern="eeee d MMM à HH'h'mm") }}
 											<span class="mx-2">|</span>
-											{% if event.room is not null %}
+											{% if event.event.room is not null %}
 												Salle :
-												{{ event.room.name }}</span>
-										{% elseif event.zoomlink is not null %}
+												{{ event.event.room.name }}</span>
+										{% elseif event.event.zoomlink is not null %}
 											A distanciel :
-											<a href="{{ event.zoomlink }}" target="_blank" rel="noopener noreferrer">Lien Zoom</a>
+											<a href="{{ event.event.zoomlink }}" target="_blank" rel="noopener noreferrer">Lien Zoom</a>
 										{% endif %}
 									</p>
 								</div>
@@ -215,18 +215,18 @@
 						ÉVALUATIONS</h2>
 					<div class="d-flex align-items-center justify-content-between mb-3 border-top"></div>
 				</div>
-				{% set nextEvents = nextEvents|sort((a, b) => a.start <=> b.start)|slice(0, 3) %}
+				{% set nextEvents = nextEvents|sort((a, b) => a.event.start <=> b.event.start)|slice(0, 3) %}
 				{% if nextEvents|length > 0 %}
 					{% for event in nextEvents %}
-						{% if event in  app.user.evaluations or event in app.user.evaluationsteacher %}
-							<a href="" class="text-black-50">
+						{% if event.event in app.user.evaluations or event.event in app.user.evaluationsteacher %}
+							<a href="{{ path('app_calendar_evaluation_details',{id: event.event.id}) }}" class="text-black-50">
 								<div class="card mb-3" style="border-radius: 15px;">
 									<div class="card-body p-4">
-										<h3 class="mb-3 primary-color h4">{{ event.name }}</h3>
+										<h3 class="mb-3 primary-color h4">{{ event.event.name }}</h3>
 										<p class="small mb-0">
-											{{ event.start|format_datetime(pattern="eeee d MMM à HH'h'mm") }}
+											{{ event.event.start|format_datetime(pattern="eeee d MMM à HH'h'mm") }}
 											<span class="mx-2">|</span>
-											Salle :{{ event.room.name }}
+											Salle :{{ event.event.room.name }}
 										</p>
 									</div>
 								</div>
@@ -234,7 +234,7 @@
 						{% endif %}
 					{% endfor %}
 				{% else %}
-					Aucun prochain cours pour le moment. Revenez plus tard.
+					Aucun prochain examen pour le moment. Revenez plus tard.
 				{% endif %}
 				<div class="border-top"></div>
 				<a href="{{ path('app_calendar_home') }}">

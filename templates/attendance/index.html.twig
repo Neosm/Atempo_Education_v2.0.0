@@ -1,0 +1,124 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Assiduité{% endblock %}
+
+{% block body %}
+
+    <div class="d-flex">
+        <h1 class="h3 mb-3 primary-color mt-3 col-10">
+            <i class="bi bi-bell-slash-fill"></i>
+            Assiduité
+        </h1>
+    </div>
+    <div class="row">
+        {% if is_granted("ROLE_STUDENT") %}
+            <div class="col-12 col-lg-6 col-xl-6">
+                <div class="card mb-3">
+                    <h2 class="ms-3">Retards</h2>
+                    {% if app.user.delays is not empty %}
+                        {% for delay in app.user.delays %}
+                            <div class="card mb-3" style="border-radius: 15px;">
+                                <div class="card-body p-4">
+                                    <h3 class="mb-3 primary-color h4">
+                                        Retard de {{ delay.delaytime|format_datetime(pattern="mm") }} minutes
+                                    </h3>
+                                    <p class="small mb-0">
+                                        {% if delay.course is not null %}
+                                            {{ delay.course.name }} <br>
+                                            De {{ delay.course.start|format_datetime(pattern="eeee d MMM HH'h'mm") }}
+                                            à {{ delay.course.end|format_datetime(pattern="eeee d MMM HH'h'mm") }} <br>
+                                            Professeur : {{ delay.course.teacher }}
+                                        {% else %}
+                                            {{ delay.evaluation.name }} <br>
+                                            De {{ delay.evaluation.start|format_datetime(pattern="eeee d MMM HH'h'mm") }}
+                                            à {{ delay.evaluation.end|format_datetime(pattern="eeee d MMM HH'h'mm") }} <br>
+                                            Professeur : {{ delay.evaluation.teacher }}
+                                        {% endif %}
+                                    </p>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        Rien à signaler pour le moment
+                    {% endif %}
+                </div>
+            </div>
+            <div class="col-12 col-lg-6 col-xl-6">
+                <div class="card mb-3">
+                    <h2 class="ms-3">Absences</h2>
+                    {% if app.user.absences is not empty %}
+                        {% for absence in app.user.absences %}
+                            <div class="card mb-3" style="border-radius: 15px;">
+                                <div class="card-body p-4">
+                                    <h3 class="mb-3 primary-color h4">
+                                        {% if absence.course is not null %}
+                                            {{ absence.course.start|format_datetime(pattern="eeee d") }}
+                                        {% else %}
+                                            {{ absence.evaluation.start|format_datetime(pattern="eeee d") }}
+                                        {% endif %}
+                                    </h3>
+                                    <p class="small mb-0">
+                                        {% if absence.course is not null %}
+                                            {{ absence.course.name }} <br>
+                                            De {{ absence.course.start|format_datetime(pattern="eeee d MMM HH'h'mm") }}
+                                            à {{ absence.course.end|format_datetime(pattern="eeee d MMM HH'h'mm") }} <br>
+                                            Professeur : {{ absence.course.teacher }}
+                                        {% else %}
+                                            {{ absence.evaluation.name }} <br>
+                                            De {{ absence.evaluation.start|format_datetime(pattern="eeee d MMM HH'h'mm") }}
+                                            à {{ absence.evaluation.end|format_datetime(pattern="eeee d MMM HH'h'mm") }} <br>
+                                            Professeur : {{ absence.evaluation.teacher }}
+                                        {% endif %}
+                                    </p>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        Rien à signaler pour le moment
+                    {% endif %}
+                </div>
+            </div>
+        {% else %}
+            {% set today = "now"|date("Y-m-d H:i", 'Europe/Paris') %}
+            {% set pastEvents = [] %}
+            {% if is_granted('ROLE_TEACHER') %}
+                {% for event in app.user.coursesteacher %}
+                    {% if event.start|date("Y-m-d H:i") < today %}
+                        {% set pastEvents = pastEvents|merge([{ 'event': event, 'type': 'courses' }]) %}
+                    {% endif %}
+                {% endfor %}
+                {% for event in app.user.evaluationsteacher %}
+                    {% if event.start|date("Y-m-d H:i") < today %}
+                        {% set pastEvents = pastEvents|merge([{ 'event': event, 'type': 'evaluations' }]) %}
+                    {% endif %}
+                {% endfor %}
+            {% endif %}
+            {% set pastEvents = pastEvents|sort((a, b) => b.event.start <=> a.event.start) %}
+
+            <div class="table-responsive custom-table-responsive mt-3">
+                <table class="table table-bordered table-hover text-center align-middle">
+                    <thead class="custom-table-header">
+                        <tr>
+                            <th>Nom de l'évènement</th>
+                            <th>Début</th>
+                            <th>Fin</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in pastEvents %}
+                            <tr>
+                                <td>{{ item.event.name }}</td>
+                                <td>{{ item.event.start|format_datetime(pattern="eeee d MMM à HH'h'mm") }}</td>
+                                <td>{{ item.event.end|format_datetime(pattern="eeee d MMM à HH'h'mm") }}</td>
+                                <td>
+                                    <a href="{{ path('app_attendance_add', {id: item.event.id, type: item.type}) }}" class="btn primary-custom-button">Ajout Absence/Retard</a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% endif %}
+    </div>
+{% endblock %}

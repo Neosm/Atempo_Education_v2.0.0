@@ -5,28 +5,34 @@
 {% block body %}
 	{% set today = "now"|date("Y-m-d H:i", 'Europe/Paris') %}
 	{% set nextEvents = [] %}
-
 	{% if not is_granted('ROLE_TEACHER') %}
 		{% for event in app.user.courses %}
 			{% if event.start|date("Y-m-d H:i") >= today %}
-				{% set nextEvents = nextEvents|merge([event]) %}
+				{% set nextEvents = nextEvents|merge([{ 'event': event, 'type': 'courses' }]) %}
 			{% endif %}
 		{% endfor %}
 		{% for event in app.user.events %}
 			{% if event.start|date("Y-m-d H:i") >= today %}
-				{% set nextEvents = nextEvents|merge([event]) %}
+				{% set nextEvents = nextEvents|merge([{ 'event': event, 'type': 'event' }]) %}
 			{% endif %}
 		{% endfor %}
 		{% for event in app.user.evaluations %}
 			{% if event.start|date("Y-m-d H:i") >= today %}
-				{% set nextEvents = nextEvents|merge([event]) %}
+				{% set nextEvents = nextEvents|merge([{ 'event': event, 'type': 'evaluations' }]) %}
 			{% endif %}
 		{% endfor %}
 		{% if app.user.studentClasses is not null %}
 			{% for studentClass in app.user.studentClasses %}
 				{% for event in studentClass.courses %}
 					{% if event.start|date("Y-m-d H:i") >= today %}
-						{% set nextEvents = nextEvents|merge([event]) %}
+						{% set nextEvents = nextEvents|merge([{ 'event': event, 'type': 'courses' }]) %}
+					{% endif %}
+				{% endfor %}
+			{% endfor %}
+			{% for studentClass in app.user.studentClasses %}
+				{% for event in studentClass.evaluations %}
+					{% if event.start|date("Y-m-d H:i") >= today %}
+						{% set nextEvents = nextEvents|merge([{ 'event': event, 'type': 'evaluations' }]) %}
 					{% endif %}
 				{% endfor %}
 			{% endfor %}
@@ -34,28 +40,19 @@
 	{% elseif is_granted('ROLE_TEACHER') %}
 		{% for event in app.user.coursesteacher %}
 			{% if event.start|date("Y-m-d H:i") >= today %}
-				{% set nextEvents = nextEvents|merge([event]) %}
+				{% set nextEvents = nextEvents|merge([{ 'event': event, 'type': 'courses' }]) %}
 			{% endif %}
 		{% endfor %}
 		{% for event in app.user.events %}
 			{% if event.start|date("Y-m-d H:i") >= today %}
-				{% set nextEvents = nextEvents|merge([event]) %}
+				{% set nextEvents = nextEvents|merge([{ 'event': event, 'type': 'event' }]) %}
 			{% endif %}
 		{% endfor %}
 		{% for event in app.user.evaluationsteacher %}
 			{% if event.start|date("Y-m-d H:i") >= today %}
-				{% set nextEvents = nextEvents|merge([event]) %}
+				{% set nextEvents = nextEvents|merge([{ 'event': event, 'type': 'evaluations' }]) %}
 			{% endif %}
 		{% endfor %}
-		{% if app.user.studentClasses is not null %}
-			{% for studentClass in app.user.studentClasses %}
-				{% for event in studentClass.courses %}
-					{% if event.start|date("Y-m-d H:i") >= today %}
-						{% set nextEvents = nextEvents|merge([event]) %}
-					{% endif %}
-				{% endfor %}
-			{% endfor %}
-		{% endif %}
 	{% endif %}
 <div class="container">
     <h1 class="h2 mt-5">Mon compte</h1>
@@ -87,19 +84,20 @@
 
     {% if not is_granted('ROLE_ADMIN') %}
         <h2 class="h3">Mes prochains cours</h2>
+        {% set nextEvents = nextEvents|sort((a, b) => a.event.start <=> b.event.start)|slice(0, 3) %}
         {% if nextEvents|length > 0 %}
             <div class="row">
                 {% for event in nextEvents %}
                     <div class="col-md-4">
                         <div class="card mb-3">
-                            <div class="card-body" style="background-color: {{ event.backgroundcolor }}; color: {{ event.textcolor }};">
-                                <h3 class="card-title">{{ event.name }}</h3>
+                            <div class="card-body" style="background-color: {{ event.event.backgroundcolor }}; color: {{ event.event.textcolor }};">
+                                <h3 class="card-title">{{ event.event.name }}</h3>
                                 <p class="card-text">
-                                    {{ event.start|format_datetime(pattern="eeee d MMM à HH'h'mm") }}<br>
-                                    {% if event.room is not null %}
-                                        Salle : {{ event.room.name }}
-                                    {% elseif event.zoomlink is not null %}
-                                        A distanciel : <a href="{{ event.zoomlink }}" target="_blank" rel="noopener noreferrer">Lien Zoom</a>
+                                    {{ event.event.start|format_datetime(pattern="eeee d MMM à HH'h'mm") }}<br>
+                                    {% if event.event.room is not null %}
+                                        Salle : {{ event.event.room.name }}
+                                    {% elseif event.event.zoomlink is not null %}
+                                        A distanciel : <a href="{{ event.event.zoomlink }}" target="_blank" rel="noopener noreferrer">Lien Zoom</a>
                                     {% endif %}
                                 </p>
                             </div>

@@ -1,18 +1,18 @@
 {% extends 'admin.html.twig' %}
 
-{% block title %}Ajouter un nouvel évènement
+{% block title %}Ajouter un nouvel Cours
 {% endblock %}
 
 
 {% block stylesheets %}
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet"/>
+	<link href="https://cdn.jsdelivr.net/npm/tom-select@2.0.0/dist/css/tom-select.css" rel="stylesheet">
 
 {% endblock %}
 
 
 {% block body %}
-	<h1>Ajouter un évènement</h1>
+	<h1>Ajouter un Cours</h1>
 
 {{ form_start(form) }}
 
@@ -57,7 +57,7 @@
 
     <div class="row mb-3">
         <div class="col">
-            <label for="{{ form.zoomswitch.vars.id }}">Cours en visio ou non</label>
+            <label for="{{ form.zoomswitch.vars.id }}">Cours en visio</label>
         </div>
     </div>
     
@@ -78,6 +78,16 @@
             {{ form_row(form.room) }}
         </div>
         {{ form_row(form.zoom_link) }}
+    </div>
+
+	<div class="row mb-3">
+        <div class="col">
+            {{ form_label(form.materials) }}
+            {{ form_widget(form.materials) }}
+        </div>
+        <div class="col">
+            {{ form_row(form.room) }}
+        </div>
     </div>
 
     <div class="row mb-3">
@@ -153,56 +163,73 @@
 
 {{ form_end(form) }}
 
-
 {% endblock %}
 
 
 {% block javascripts %}
-<script src = "https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"> </script>
+<script src = "https://cdn.jsdelivr.net/npm/tom-select@2.0.0/dist/js/tom-select.complete.min.js"> </script>
 <script src = "https://cdn.jsdelivr.net/npm/flatpickr"> </script> 
-<script src = "https://npmcdn.com/flatpickr/dist/l10n/fr.js" > </script> 
 <script >
 	$(document).ready(function() {
-		$('.students-field').select2({
-			closeOnSelect: false
+		var courses_studentClasseselect = new TomSelect('#courses_studentClasses', {
+			hideSelected: true,
+			maxOptions: 10,
+			plugins: {
+				remove_button: {
+					title: 'Supprimer la classe'
+				}
+			}
 		});
-		$('.programmes-field').select2({
-			closeOnSelect: false
-		});
-		$('.lecons-field').select2({
-			closeOnSelect: false
+		var courses_studentsSelect = new TomSelect('#courses_students', {
+			hideSelected: true,
+			maxOptions: 60,
+			plugins: {
+				remove_button: {
+					title: 'Supprimer l\'étudiant(e)'
+				}
+			}
 		});
 
-		var studentClassSelect = $('#courses_studentClasses');
-		var studentsSelect = $('#courses_students');
-		var studentSwitchInput = $('#courses_studentswitch');
-		// Masquer les élèves au chargement de la page
-		studentsSelect.next('.select2-container').hide();
-		$('.label-students').hide();
-		// Afficher la classe par défaut
-		studentClassSelect.show();
-		$('.label-studentClass').show();
-		// Écouter les changements sur le champ switch student
-		studentSwitchInput.on('change', function() {
+		 // Sélectionnez tous les éléments select[multiple]
+		var allSelects = document.querySelectorAll('select[multiple]');
+
+		// Filtrez les éléments déjà utilisés par les deux premiers TomSelect
+		var unusedSelects = Array.from(allSelects).filter(function(select) {
+			return select.id !== 'courses_studentClasses' && select.id !== 'courses_students';
+		});
+
+		// Initialisez un TomSelect pour les éléments restants
+		unusedSelects.forEach(function(select) {
+			new TomSelect(select, {
+				hideSelected: true,
+				maxOptions: 20,
+				plugins: {
+					remove_button: {
+						title: 'Retirer'
+					}
+				}
+			});
+		});
+		
+		$('#courses_students').parent().hide();
+		$('#courses_studentClasses').parent().show();
+
+		// Écouter les changements sur le switch
+		$('#courses_studentswitch').on('change', function() {
 			if ($(this).is(':checked')) {
-				studentClassSelect.hide();
-				$('.label-studentClass').hide();
+			// Si le switch est coché, masquer le premier TomSelect et afficher le deuxième
+			$('#courses_studentClasses').parent().hide();
+			$('#courses_students').parent().show();
 
-				studentsSelect.next('.select2-container').show();
-				$('.label-students').show();
-
-				// Vider le champ de la classe et réinitialiser sa valeur
-				studentClassSelect.val('').trigger('change');
-
+			// Clear la sélection du premier TomSelect
+			courses_studentClasseselect.clear();
 			} else {
-				studentsSelect.next('.select2-container').hide();
-				$('.label-students').hide();
+			// Si le switch est décoché, masquer le deuxième TomSelect et afficher le premier
+			$('#courses_students').parent().hide();
+			$('#courses_studentClasses').parent().show();
 
-				studentClassSelect.show();
-				$('.label-studentClass').show();
-
-				// Vider le champ des élèves et réinitialiser sa valeur
-				studentsSelect.val(null).trigger('change');
+			// Clear la sélection du deuxième TomSelect
+			courses_studentsSelect.clear();
 			}
 		});
 
@@ -216,7 +243,7 @@
 
 		// Afficher les salles par défaut
 		roomSwitchselect.show();
-		$('#row-materials').show();
+		$('#courses_materials').show();
 		$('.label-room').show();
 		$('.label-materials').show();
 		// Écouter les changements sur le champ switch room
@@ -225,7 +252,7 @@
 			if ($(this).is(':checked')) {
 				$('.label-room').hide();
 				$('.label-materials').hide();
-				$('#row-materials').hide();
+				$('#courses_materials').hide();
 				roomSwitchselect.hide();
 
 				zoomLinkSelect.show();
@@ -241,7 +268,7 @@
 
 				$('.label-room').show();
 				roomSwitchselect.show();
-				$('#row-materials').show();
+				$('#courses_materials').show();
 				$('.label-materials').show();
 
 				// Vider le champ des élèves et réinitialiser sa valeur
@@ -249,13 +276,130 @@
 			}
 		});
 
-		flatpickr('.datetimepickr', {
+		function roundUpHour(date) {
+			var hour = date.getHours();
+			
+			// Arrondir à l'heure supérieure
+			if (date.getMinutes() > 0) {
+				hour += 1;
+			}
+
+			// Retourner l'heure arrondie
+			return hour;
+		}
+
+		function roundUpDateAndHour() {
+			var currentDate = new Date();
+			var roundedHour = roundUpHour(currentDate);
+			
+			// Réinitialiser les minutes et les secondes à zéro
+			currentDate.setMinutes(0);
+			currentDate.setSeconds(0);
+
+			// Si l'heure arrondie dépasse minuit, passer au jour suivant
+			if (roundedHour >= 24) {
+				currentDate.setDate(currentDate.getDate() + 1);
+				roundedHour = 0; // Réinitialiser l'heure à zéro
+			}
+
+			// Définir l'heure arrondie sur la date actuelle
+			currentDate.setHours(roundedHour);
+
+			// Retourner la date et l'heure arrondies
+			return currentDate;
+		}
+		function initDatePicker(selector, options) {
+			var roundedDate = roundUpDateAndHour();
+			var flatpickrOptions = {
+				defaultDate: roundedDate,
+				enableTime: options.enableTime || false,
+				time_24hr: true, // Utiliser le format 24 heures
+				monthSelectorType: 'static',
+				disableMobile: true,
+				altInput: true,
+				altFormat: "j M Y, H:i",
+				dateFormat: "Y-m-d H:i:s",
+
+				
+				...options
+			};
+
+			flatpickr(selector, flatpickrOptions);
+		}
+
+		// Utilisation du DatePicker avec des options personnalisées
+		initDatePicker('.datetimepickr', {
 			enableTime: true,
-			dateFormat: "Y-m-d H:i",
-			time_24hr: true,
-			minTime: "00:00",
-			maxTime: "23:59"
+			allowInput: true,
+			nextArrow: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Pro 6.1.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2022 Fonticons, Inc. --><path d="M96 480c-8.188 0-16.38-3.125-22.62-9.375c-12.5-12.5-12.5-32.75 0-45.25L242.8 256L73.38 86.63c-12.5-12.5-12.5-32.75 0-45.25s32.75-12.5 45.25 0l192 192c12.5 12.5 12.5 32.75 0 45.25l-192 192C112.4 476.9 104.2 480 96 480z"/></svg>`,
+			prevArrow: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Pro 6.1.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2022 Fonticons, Inc. --><path d="M224 480c-8.188 0-16.38-3.125-22.62-9.375l-192-192c-12.5-12.5-12.5-32.75 0-45.25l192-192c12.5-12.5 32.75-12.5 45.25 0s12.5 32.75 0 45.25L77.25 256l169.4 169.4c12.5 12.5 12.5 32.75 0 45.25C240.4 476.9 232.2 480 224 480z"/></svg>`,
+			locale: {
+				firstDayOfWeek: 1,
+				weekdays: {
+					shorthand: ["dim", "lun", "mar", "mer", "jeu", "ven", "sam"],
+					longhand: [
+						"dimanche",
+						"lundi",
+						"mardi",
+						"mercredi",
+						"jeudi",
+						"vendredi",
+						"samedi",
+					],
+				},
+				months: {
+					shorthand: [
+						"janv",
+						"févr",
+						"mars",
+						"avr",
+						"mai",
+						"juin",
+						"juil",
+						"août",
+						"sept",
+						"oct",
+						"nov",
+						"déc",
+					],
+					longhand: [
+						"Janvier",
+						"Février",
+						"Mars",
+						"Avril",
+						"Mai",
+						"Juin",
+						"Juillet",
+						"Août",
+						"Septembre",
+						"Octobre",
+						"Novembre",
+						"Décembre",
+					],
+				},
+				ordinal: (nth) => {
+					if (nth > 1) return "";
+					return "er";
+				},
+				rangeSeparator: " au ",
+				weekAbbreviation: "Sem",
+				scrollTitle: "Défiler pour augmenter la valeur",
+				toggleTitle: "Cliquer pour basculer",
+			}, // Supprimez la virgule ici
+			onDayCreate: function(_, _, _, dayElem) {
+				if (dayElem.dateObj.getDay() === 0 || dayElem.dateObj.getDay() === 6) {
+					dayElem.className += ' weekend-days';
+				}
+			}
 		});
+
+		// Vous pouvez également créer une fonction pour le DateAndTimePicker si nécessaire
+		function DateAndTimePicker(selector) {
+			initDatePicker(selector, {
+				enableTime: true,
+			});
+		}
+
 
 		var materialsCheckboxes = document.querySelectorAll('.materials-checkboxes input[type="checkbox"]');
 		var roomSelect = document.querySelector('.room-select');
@@ -329,16 +473,12 @@
 
     // Écouter les changements sur le champ isRecurring (liste déroulante)
     isRecurringSelect.on('change', function() {
-    console.log('La sélection de la liste déroulante a changé.');
     var selectedValue = $(this).val();
-    console.log('Valeur sélectionnée : ' + selectedValue);
 
     if (selectedValue === '1') {
         recurrenceFields.show();
-        console.log('Affichage des champs de récurrence.');
     } else {
         recurrenceFields.hide();
-        console.log('Masquage des champs de récurrence.');
     }
 });
 

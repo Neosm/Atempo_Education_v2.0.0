@@ -220,7 +220,9 @@ class CalendarController extends AbstractController
     public function coursesadd(Request $request, EntityManagerInterface $entityManager, RoomsRepository $roomsRepository): Response
     {
         $event = new Courses();
-        $ecole =  $this->getUser()->getSchool();
+        $user = $this->getUser();
+        $isAdminRoute = false;
+        $ecole =  $user->getSchool();
         $equipments = [];
 
         $rooms = $roomsRepository->findBy(['school' => $ecole]);
@@ -230,7 +232,7 @@ class CalendarController extends AbstractController
             }
         }
         
-        $form = $this->createForm(CoursesType::class, $event, ['ecole' => $ecole, 'equipments' => $equipments]);
+        $form = $this->createForm(CoursesType::class, $event, ['ecole' => $ecole, 'equipments' => $equipments, 'isAdminRoute' => $isAdminRoute, 'user' => $user]);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
@@ -245,6 +247,7 @@ class CalendarController extends AbstractController
             $numberOfStudents = count($studentsData);
             $last = 1;
             $event->setSchool($ecole);
+            $event->setTeacher($user);
 
             if ($numberOfStudentsClasses !==0) {
                 foreach ($studentClassData as $studentClass) {
@@ -278,33 +281,40 @@ class CalendarController extends AbstractController
             $entityManager->flush();
             // Récupérer les données de récurrence depuis le formulaire
             $recurrence = $form->get('recurrence')->getData();
-            $recurrenceEnd = $form->get('recurrence_end')->getData();
-            $recurrenceFrequency = $form->get('recurrence_frequency')->getData();
             // Si la récurrence est activée
         
-            if ($recurrence === true && $recurrenceEnd) {
-                // Créez les événements récurrents
-                $currentDate = clone $start;
-                $endDate = clone $end;
-                while ($currentDate <= $recurrenceEnd) {
-                    $recurringEvent = $this->createRecurringEvent($form, $currentDate, $endDate, $duration, $event);
-                    $entityManager->persist($recurringEvent);
-                    // Passez à la prochaine occurrence en fonction de la fréquence
-                    if ($recurrenceFrequency === 'daily') {
-                        $currentDate->modify("+1 day");
-                        $endDate->modify("+1 day");
-                    } elseif ($recurrenceFrequency === 'weekly') {
-                        $currentDate->modify("+1 week");
-                        $endDate->modify("+1 week");
-                    } elseif ($recurrenceFrequency === 'monthly') {
-                        $currentDate->modify("+1 month");
-                        $endDate->modify("+1 month");
+            if ($recurrence === true ) {
+                $recurrenceEnd = $form->get('recurrence_end')->getData();
+                $recurrenceFrequency = $form->get('recurrence_frequency')->getData();
+                if ($recurrenceEnd) {
+                    // Créez les événements récurrents
+                    $currentDate = clone $start;
+                    $endDate = clone $end;
+                    while ($currentDate <= $recurrenceEnd) {
+                        $recurringEvent = $this->createRecurringEvent($form, $currentDate, $endDate, $duration, $event);
+                        $entityManager->persist($recurringEvent);
+                        // Passez à la prochaine occurrence en fonction de la fréquence
+                        if ($recurrenceFrequency === 'daily') {
+                            $currentDate->modify("+1 day");
+                            $endDate->modify("+1 day");
+                        } elseif ($recurrenceFrequency === 'weekly') {
+                            $currentDate->modify("+1 week");
+                            $endDate->modify("+1 week");
+                        } elseif ($recurrenceFrequency === 'monthly') {
+                            $currentDate->modify("+1 month");
+                            $endDate->modify("+1 month");
+                        }
+                        $entityManager->flush();
                     }
-                    $entityManager->flush();
                 }
+            } else {
+                $event->setRecurrenceEnd(null);
+                $entityManager->persist($event);
+                $entityManager->flush();
             }
-            $this->addFlash('success', 'L\'événement a été créé avec succès.');
-            return $this->redirectToRoute('app_calendar_home');  
+
+        $this->addFlash('success', 'L\'événement a été créé avec succès.');
+        return $this->redirectToRoute('app_calendar_home');  
         }
 
         return $this->render('calendar/form.html.twig', [
@@ -510,15 +520,19 @@ class CalendarController extends AbstractController
     {
         // Sauvegardez l'heure de début d'origine
         $originalStart = $courses->getStart();
-        $ecole =  $this->getUser()->getSchool();
+        $user = $this->getUser();
+        $isAdminRoute = false;
+        $ecole =  $user->getSchool();
 
-        $form = $this->createForm(CoursesType::class, $courses, ['ecole' => $ecole]);
+        $form = $this->createForm(CoursesType::class, $courses, ['ecole' => $ecole, 'isAdminRoute' => $isAdminRoute, 'user' => $user]);
         $form->handleRequest($request);
 
 
         if ($form->isSubmitted() && $form->isValid()) {
             $start = $form->get('start')->getData();
             $courses->setStart($start);
+            
+            $courses->setTeacher($user);
 
             $title = $form->get('discipline')->getData() . ' - ';
             $studentClassData = $form->get('studentClasses')->getData();
@@ -954,15 +968,31 @@ class CalendarController extends AbstractController
         $user = $this->getUser();
 
         // Récupérer les événements associés à l'utilisateur
-        $courses  = $coursesRepository->findEventsByUser($user);
+        $courses = $coursesRepository->findEventsByUser($user);
         $events = $user->getEvents()->toArray();
         $evaluations = $evaluationsRepository->findEventsByUser($user);
-        $allEvents = array_merge($courses, $evaluations, $events);
 
+        $allEvents = [];
+
+        foreach ($courses as $course) {
+            $allEvents[] = ['event' => $course, 'type' => 'course'];
+        }
+
+        foreach ($events as $event) {
+            $allEvents[] = ['event' => $event, 'type' => 'event'];
+        }
+
+        foreach ($evaluations as $evaluation) {
+            $allEvents[] = ['event' => $evaluation, 'type' => 'evaluation'];
+        }
+
+        dump($allEvents);
 
         // Calculer la date du premier et dernier événement
-        $firstEvent = reset($allEvents );
-        $lastEvent = end($allEvents );
+        $firstEventItem = reset($allEvents);
+        $lastEventItem = end($allEvents);
+        $firstEvent = $firstEventItem['event'];
+        $lastEvent = $lastEventItem['event'];
         $startDate = $firstEvent->getStart()->format('Ymd');
         $endDate = $lastEvent->getEnd()->format('Ymd');
         $userDateOfBirth = $user->getDateOfBirth()->format('Y-m-d');
@@ -974,12 +1004,16 @@ class CalendarController extends AbstractController
         $content .= "X-CALSTART:" . $startDate . "\r\n";
         $content .= "X-CALEND:" . $endDate . "\r\n";
         $content .= "X-WR-CALNAME;LANGUAGE=fr:ATempo - " . $user->getLastname() . " " . $user->getFirstname() . " - " . $userDateOfBirth . " - " . "\r\n";
-        $content .= "X-WR-CALDESC;LANGUAGE=fr:Emploi du temps " . $user->getLastname() . " " . $user->getFirstname() . " - " . $userDateOfBirth . " - " . " | Généré par ATempo.Education - Semaines :"  . date('W') . " - " . $lastEvent->getEnd()->format('W') . "\r\n";
+        $content .= "X-WR-CALDESC;LANGUAGE=fr:Emploi du temps " . $user->getLastname() . " " . $user->getFirstname() . " - " . $userDateOfBirth . " - " . " | Généré par ATempo.Education - Semaines :" . date('W') . " - " . $lastEvent->getEnd()->format('W') . "\r\n";
 
-        foreach ($allEvents as $event) {
+        foreach ($allEvents as $item) {
+            $event = $item['event'];
+            $type = $item['type'];
+            dump($event);
+
             $content .= "BEGIN:VEVENT\r\n";
             $content .= "CATEGORIES:ATempo.Education\r\n";
-            $content .= "UID:" . $event->getidUnique() . " " . $user . "\r\n";
+            $content .= "UID:" . $event->getIdUnique() . " " . $user . "\r\n";
             $content .= "DTSTAMP:" . gmdate('Ymd\THis\Z') . "\r\n";
             $content .= "DTSTART:" . $event->getStart()->format('Ymd\THis\Z') . "\r\n";
             $content .= "DTEND:" . $event->getEnd()->format('Ymd\THis\Z') . "\r\n";
@@ -988,33 +1022,30 @@ class CalendarController extends AbstractController
             } elseif ($event->getZoomLink() != null) {
                 $content .= "LOCATION: Lien Zoom : " . $event->getZoomLink() . "\r\n";
             }
+            
             $description = "";
 
-            if ($event->getStudentClasses()) {
-                foreach ($event->getStudentClasses() as $studentClass  ) {
+            if ($type == 'event' && $event->getUsers()->count() > 0) {
+                $description .= "Participants: ";
+                foreach ($event->getUsers() as $user) {
+                    $description .= $user->getName() . ", ";
+                }
+                // Supprimer la virgule finale
+                $description = rtrim($description, ", ") . "\\n";
+            } elseif ($event->getStudentClasses()) {
+                foreach ($event->getStudentClasses() as $studentClass) {
                     $description .= "Classe: " . $studentClass->getName() . "\\n";
                 }
             } elseif ($event->getStudents()->count() > 0) {
                 $description .= "Élèves: ";
-
                 foreach ($event->getStudents() as $student) {
                     $description .= $student->getName() . ", ";
                 }
-
-                // Supprimer la virgule finale
-                $description = rtrim($description, ", ") . "\\n";
-            } elseif ($event->getUsers()->count() > 0) {
-                $description .= "Participants: ";
-
-                foreach ($event->getUsers() as $user) {
-                    $description .= $user->getName() . ", ";
-                }
-
                 // Supprimer la virgule finale
                 $description = rtrim($description, ", ") . "\\n";
             }
 
-            if ($event->getTeacher()) {
+            if ($type != "event" && $event->getTeacher()) {
                 $description .= "Professeur: " . $event->getTeacher() . "\\n";
             }
             
@@ -1024,7 +1055,7 @@ class CalendarController extends AbstractController
                 $description .= "Lien Zoom: " . $event->getZoomLink();
             }
 
-            $content .= "SUMMARY:" .  $event->getName() . "\r\n";
+            $content .= "SUMMARY:" . $event->getName() . "\r\n";
             $content .= "DESCRIPTION:" . $description . "\r\n";
             $content .= "END:VEVENT\r\n";
         }
@@ -1040,22 +1071,26 @@ class CalendarController extends AbstractController
         $response->headers->set('Content-Disposition', 'attachment; filename="' . $filename . '"');
 
         return $response;
+
     }
 
     #[Route('/agenda/examen/creer', name: 'app_calendar_evaluation_add')]
     public function evaluationadd(Request $request, EntityManagerInterface $entityManager): Response
     {
         $event = new Evaluations();
-        $ecole =  $this->getUser()->getSchool();
+        $user = $this->getUser();
+        $isAdminRoute = false;
+        $ecole =  $user->getSchool();
         
 
-        $form = $this->createForm(EvaluationsType::class, $event, ['ecole' => $ecole]);
+        $form = $this->createForm(EvaluationsType::class, $event, ['ecole' => $ecole, 'isAdminRoute' => $isAdminRoute, 'user' => $user]);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
             // Calculer l'heure de fin en fonction de l'heure de début et de la durée
             $start = $form->get('start')->getData(); // Récupérer l'objet DateTime depuis le formulaire
             $event->setStart($start);
+            $event->setTeacher($user);
 
             $title = 'Examen ' . $form->get('discipline')->getData() . ' - ';
             $studentClassData = $form->get('studentClasses')->getData();
@@ -1121,16 +1156,19 @@ class CalendarController extends AbstractController
     #[Route('/agenda/examen/{id}/modifier', name: 'app_calendar_evaluation_modify')]
     public function evaluationmodify(Evaluations $evaluations, EntityManagerInterface $entityManager, Request $request): Response
     {
-        $ecole =  $this->getUser()->getSchool();
+        $user = $this->getUser();
+        $isAdminRoute = false;
+        $ecole =  $user->getSchool();
         
 
-        $form = $this->createForm(EvaluationsType::class, $evaluations, ['ecole' => $ecole]);
+        $form = $this->createForm(EvaluationsType::class, $evaluations, ['ecole' => $ecole, 'isAdminRoute' => $isAdminRoute, 'user' => $user]);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
             // Calculer l'heure de fin en fonction de l'heure de début et de la durée
             $start = $form->get('start')->getData(); // Récupérer l'objet DateTime depuis le formulaire
             $evaluations->setStart($start);
+            $evaluations->setTeacher($user);
 
             $title = 'Examen ' . $form->get('discipline')->getData() . ' - ';
             $studentClassData = $form->get('studentClasses')->getData();

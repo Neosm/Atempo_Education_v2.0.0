@@ -20,12 +20,12 @@ security:
             logout:
                 path: app_logout
                 target: app_login
-
             remember_me:
                 secret: '%kernel.secret%'
                 lifetime: 604800
                 path: /
                 always_remember_me: true
+
 
             # activate different ways to authenticate
             # https://symfony.com/doc/current/security.html#the-firewall
@@ -38,10 +38,10 @@ security:
     access_control:
         - { path: ^/connexion, roles: PUBLIC_ACCESS }
         - { path: ^/inscription, roles: ROLE_SECRETARIAT }
-        - { path: ^/deconnexion, roles: IS_AUTHENTICATED_FULLY }
+        - { path: ^/deconnexion, roles: IS_AUTHENTICATED }
         - { path: ^/api/, roles: PUBLIC_ACCESS }
         - { path: ^/mot-de-passe-oublie, roles: PUBLIC_ACCESS }
-        - { path: ^/mon-profil, roles: IS_AUTHENTICATED_FULLY }
+        - { path: ^/mon-profil, roles: IS_AUTHENTICATED }
         
         - { path: ^/secretariat/, roles: ROLE_SECRETARIAT }
         - { path: ^/superadmin/, roles: ROLE_ADMIN }

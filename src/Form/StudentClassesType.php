@@ -50,7 +50,7 @@ class StudentClassesType extends AbstractType
                 'multiple' => true,
                 'required' =>false,
                 'attr' => [
-                    'class' => 'students-field form-control'
+                    'class' => 'students-field'
                 ],
                 'label_attr' => [
                     'class' => 'label-students',

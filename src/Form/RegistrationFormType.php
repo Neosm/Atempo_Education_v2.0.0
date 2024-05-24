@@ -66,12 +66,14 @@ class RegistrationFormType extends AbstractType
         ])
         ->add('date_of_birth', DateType::class, [
             'label' => "Date de naissance",
-            'years' => range(date('Y') - 100, date('Y')),
+            'widget' => 'single_text',
+            'html5' => false,
             'attr' => [
-                'class' => 'form-control form-control-lg'
+                'class' => 'form-control form-control-lg datetimepickr'
             ],
         ])
         ->add('address', TextType::class, [
+            'label' => 'Adresse',
             'attr' => [
                 'class' => 'form-control form-control-lg'
             ],
@@ -80,6 +82,7 @@ class RegistrationFormType extends AbstractType
             ]
         ])
         ->add('area_code', TextType::class, [
+            'label' => 'Code région',
             'attr' => [
                 'class' => 'form-control form-control-lg'
             ],
@@ -88,6 +91,7 @@ class RegistrationFormType extends AbstractType
             ]
         ])
         ->add('zip_code', TextType::class, [
+            'label' => 'Zip Code',
             'attr' => [
                 'class' => 'form-control form-control-lg'
             ],
@@ -96,6 +100,7 @@ class RegistrationFormType extends AbstractType
             ]
         ])
         ->add('city', TextType::class, [
+            'label' => 'Ville',
             'attr' => [
                 'class' => 'form-control form-control-lg'
             ],

@@ -35,7 +35,7 @@ class DisciplinesType extends AbstractType
             },
                 'choice_label' => 'UserIdentifier',
                 'attr' => [
-                    'class' => 'form-control',
+                    'class' => '',
                 ]
             ])
         ;

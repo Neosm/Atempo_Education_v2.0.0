@@ -63,7 +63,7 @@
 										<i class="bi bi-geo-alt event-icon"></i>
 										Salle de classe :
 										{{ event.room.name }}</p>
-								
+								{% endif %}
 								{% if event.teacher is defined %}
 									<p class="card-text">
 										<i class="bi bi-person event-icon"></i>
@@ -91,13 +91,13 @@
 										{% endfor %}
 									</ul>
 								{% endif %}
-								{% if event.programs is not empty %}
+								{% if event.program is not empty %}
 									<p class="card-text">
 										<i class="bi bi-journal-bookmark event-icon"></i>
 										Programme :
 									</p>
 									<ul class="list-unstyled">
-										{% for programme in event.programs %}
+										{% for programme in event.program %}
 											<li>
 												<a href="{{ path('app_programs_details', {slug: programme.slug}) }}">{{ programme.name }}</a>
 											</li>
@@ -109,13 +109,13 @@
 										Aucun programme
 									</p>
 								{% endif %}
-								{% if event.lessons is not empty %}
+								{% if event.lesson is not empty %}
 									<p class="card-text">
 										<i class="bi bi-book event-icon"></i>
 										Leçons :
 									</p>
 									<ul class="list-unstyled">
-										{% for lecon in event.lessons %}
+										{% for lecon in event.lesson %}
 											<li>
 												<a href="{{ path('app_lessons_details', {slug: lecon.slug}) }}">{{ lecon.name }}
 												</a>

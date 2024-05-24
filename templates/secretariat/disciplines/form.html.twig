@@ -2,6 +2,12 @@
 
 {% block title %}{% if app.request.attributes.get('_route') == 'app_secretariat_disciplines_create' %}Créer une Discipline{% else %}Modifier la Discipline{% endif %}{% endblock %}
 
+
+{% block stylesheets %}
+<link href="https://cdn.jsdelivr.net/npm/tom-select@2.0.0/dist/css/tom-select.css" rel="stylesheet">
+{% endblock %}
+
+
 {% block body %}
 <div class="container">
     <h1>{% if app.request.attributes.get('_route') == 'app_secretariat_disciplines_create' %}Créer une Discipline{% else %}Modifier la Discipline{% endif %}</h1>
@@ -17,15 +23,41 @@
         
         {{ form_row(form.name, {'attr': {'class': 'form-control'}}) }}
         {{ form_row(form.teachers) }}
-            <div class="row mb-4">
+            <div class="row mb-4 mt-3">
                 <div class="col">
                     <button class="btn btn-primary">{{ button_label|default('Sauvegarder') }}</button>
+                    <a href="{{ path('app_secretariat_disciplines_home') }}" class="btn btn-secondary  float-end">Retour à la liste des Disciplines</a>
                 </div>
             </div>
         
         {{ form_end(form) }}
     </form>
     
-    <a href="{{ path('app_secretariat_disciplines_home') }}" class="btn btn-secondary mt-3 float-end">Retour à la liste des Disciplines</a>
 </div>
 {% endblock %}
+
+
+{% block javascripts %}
+<script src="https://cdn.jsdelivr.net/npm/tom-select@2.0.0/dist/js/tom-select.complete.min.js"></script>
+	<script>
+        window.onload = () => {
+			function bindSelect (select) {
+				new TomSelect(select, {
+					hideSelected: true,
+					closeAfterSelect: true,
+					maxOptions: 20,
+					plugins: {
+						remove_button: {
+							title: 'Supprimer l\'équipement'
+						}
+					}
+				})
+			}
+			Array.from(document.querySelectorAll('select[multiple]')).map(bindSelect)
+
+			
+        }
+    </script>
+{% endblock %}
+
+

@@ -112,7 +112,7 @@
 													<li class="sidebar-item  {% if app.request.attributes.get('_route') starts with 'app_secretariat_student_classes_home' %}active{% endif %}">
 														<a href="{{ path('app_secretariat_student_classes_home') }}" class="sidebar-link">Voir les classes</a>
 													</li>
-													<li class="sidebar-item  {% if app.request.attributes.get('_route') starts with 'admin_studentclasse_create' %}active{% endif %}">
+													<li class="sidebar-item  {% if app.request.attributes.get('_route') starts with 'app_secretariat_student_classes_create' %}active{% endif %}">
 														<a href="{{ path('app_secretariat_student_classes_create') }}" class="sidebar-link">Ajouter une classe</a>
 													</li>
 												</ul>
@@ -232,7 +232,7 @@
 													<span class="align-middle">Articles</span>
 												</a>
 												<ul id="articles" class="sidebar-dropdown list-unstyled collapse {% if app.request.attributes.get('_route') starts with 'app_secretariat_posts_' or  app.request.attributes.get('_route') starts with 'admin_categories_' %}show{% endif %}">
-													<li class="sidebar-item {% if app.request.attributes.get('_route') starts with 'app_secretariat_posts_' %}active{% endif %}">
+													<li class="sidebar-item {% if app.request.attributes.get('_route') starts with 'app_secretariat_posts_home' %}active{% endif %}">
 														<a href="{{ path('app_secretariat_posts_home') }}" class="sidebar-link ">Tous les articles</a>
 													</li>
 													<li class="sidebar-item {% if app.request.attributes.get('_route') starts with 'app_secretariat_posts_add' %}active{% endif %}">

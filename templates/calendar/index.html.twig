@@ -213,15 +213,29 @@
                             }
                             // Ajouter la classe ou la liste d'élève
                             $('#event-students').empty(); // Vide le contenu de #event-students
-                            if (event.studentClasses) {
-                                addEventDetail('<i class="bi bi-card-list event-icon"></i> <strong>Classe : </strong>' + event.studentClasses);
+                            if (event.studentClass  && event.studentClass.length > 0) {
+                                addEventDetail('<i class="bi bi-card-list event-icon"></i> <strong>Classe : </strong>');
+                                event.studentClass.forEach(function(studentClass) {
+                                    addEventDetail(studentClass);
+                                });
                             } else if (event.students && event.students.length > 0) {
                                 addEventDetail('<i class="bi bi-people event-icon"></i> <strong>Élèves : </strong>');
                                 event.students.forEach(function(student) {
                                     addEventDetail(student);
                                 });
+                            } else if (event.users && event.users.length > 0) {
+                                var maxIterations = 6;
+                                var count = 0;
+                                addEventDetail('<i class="bi bi-people event-icon"></i> <strong>Participants : </strong>');
+                                event.users.forEach(function(users) {
+                                    if (count < maxIterations) {
+                                        addEventDetail(users);
+                                        count++;
+                                    } else { '...'
+                                    }
+                                });
                             } else {
-                                addEventDetail('Aucun élève');
+                                addEventDetail('Aucun élève, aucune classe');
                             }
                             function addEventDetail(detail) {
                                 var eventStudents = $('#event-students');
@@ -232,7 +246,7 @@
 
                             // Afficher les informations de la salle de classe
                             if (event.room) {
-                                $('#event-room').html('<i class="bi bi-geo-alt event-icon"></i> <strong>Salle de classe : </strong>' + event.room);
+                                $('#event-room').html('<i class="bi bi-geo-alt event-icon"></i> <strong>Salle : </strong>' + event.room);
                             }                            
                             // Afficher le lien Zoom
                             if (event.zoomlink) {

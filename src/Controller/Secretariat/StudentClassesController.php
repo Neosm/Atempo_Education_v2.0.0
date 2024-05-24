@@ -62,7 +62,7 @@ class StudentClassesController extends AbstractController
     
             $this->addFlash('success', 'Classe d\'élèves créée avec succès.');
     
-            return $this->redirectToRoute('admin_studentclasse_home');
+            return $this->redirectToRoute('app_secretariat_student_classes_home');
         }
     
         return $this->render('secretariat/student_classes/form.html.twig', [

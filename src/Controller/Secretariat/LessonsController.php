@@ -3,7 +3,9 @@
 namespace App\Controller\Secretariat;
 
 use App\Entity\Lessons;
+use App\Entity\LessonsAudios;
 use App\Entity\LessonsPdf;
+use App\Entity\LessonsVideos;
 use App\Form\LessonsType;
 use App\Repository\LessonsAudiosRepository;
 use App\Repository\LessonsPdfRepository;
@@ -87,6 +89,41 @@ class LessonsController extends AbstractController
                     
 
                     $lessons->addLessonsPDF($newPDF);
+                    $entityManager->persist($lessons);
+                }
+                    
+            }
+            $audios = $form->get('audio')->getData();
+            if ($audios) {
+                foreach ($audios as $audio) {
+                    $newAudio = new LessonsAudios();
+                    $newAudio->setLink($audio);
+                    $newAudio->setname($audio);
+                    $newAudio->setSchool($ecole);
+
+                    $entityManager->persist($newAudio);
+                    $entityManager->flush();
+                    
+
+                    $lessons->addLessonsAudio($newAudio);
+                    $entityManager->persist($lessons);
+                }
+                    
+            }
+            $videos = $form->get('video')->getData();
+            if ($videos) {
+                foreach ($videos as $video) {
+                    
+                    $newVideo = new LessonsVideos();
+                    $newVideo->setLink($video);
+                    $newVideo->setname($video);
+                    $newVideo->setSchool($ecole);
+
+                    $entityManager->persist($newVideo);
+                    $entityManager->flush();
+                    
+
+                    $lessons->addLessonsVideo($newVideo);
                     $entityManager->persist($lessons);
                 }
                     

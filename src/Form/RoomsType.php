@@ -43,7 +43,7 @@ class RoomsType extends AbstractType
                 ],
                 'multiple' => true, // Permet à l'utilisateur de sélectionner plusieurs options
                 'attr' => [
-                    'class' => 'form-control'
+                    'class' => ''
                 ]
             ])
         ;

@@ -4,7 +4,7 @@
 	Modifier la classe {% endif %}{% endblock %}
 
 {% block stylesheets %}
-    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet"/>
+<link href="https://cdn.jsdelivr.net/npm/tom-select@2.0.0/dist/css/tom-select.css" rel="stylesheet">
 
 {% endblock %}
 {% block body %}
@@ -24,13 +24,24 @@
 {% endblock %}
 
 {% block javascripts %}
-<script src = "https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"> </script>
-<script>
-$(document).ready(function() {
-		$('.students-field').select2({
-			closeOnSelect: false
-		});
-})
-</script>
+<script src="https://cdn.jsdelivr.net/npm/tom-select@2.0.0/dist/js/tom-select.complete.min.js"></script>
+	<script>
+        window.onload = () => {
+			function bindSelect (select) {
+				new TomSelect(select, {
+					hideSelected: true,
+					closeAfterSelect: true,
+					maxOptions: 20,
+					plugins: {
+						remove_button: {
+							title: 'Supprimer l\'équipement'
+						}
+					}
+				})
+			}
+			Array.from(document.querySelectorAll('select[multiple]')).map(bindSelect)
 
+			
+        }
+    </script>
 {% endblock %}

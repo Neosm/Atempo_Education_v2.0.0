@@ -1,0 +1,45 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Ajout Assiduité{% endblock %}
+
+{% block body %}
+    <div class="container custom-container mt-5">
+        <h1 class="mb-4">Formulaire Retard et Absence</h1>
+
+        {{ form_start(form) }}
+        <div class="table-responsive custom-table-responsive">
+            <table class="table table-bordered table-hover text-center align-middle">
+                <thead class="custom-table-header">
+                    <tr>
+                        <th>Élève</th>
+                        <th>Retard (en minutes)</th>
+                        <th>Absent</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for i in range(0, form.retards|length - 1) %}
+                        <tr>
+                            <td>{{ form_widget(form.retards[i].student_name, {'attr': {'class': 'form-control'}}) }}</td>
+                            <td>{{ form_widget(form.retards[i].delay_time, {'attr': {'class': 'form-control'}}) }}</td>
+                            <td>{{ form_widget(form.absences[i].est_absent, {'attr': {'class': 'form-check-input'}}) }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Masquer les champs indésirables -->
+        <div style="display: none;">
+            {{ form_rest(form) }}
+        </div>
+
+        <div class="row mt-4">
+            <div class="col text-end">
+                <button class="btn btn-primary custom-btn-primary">{{ button_label|default('Confirmer') }}</button>
+                <a href="{{ path('app_attendance_home') }}" class="btn secondary-custom-button ms-2">Retour aux assiduités</a>
+            </div>
+        </div>
+
+        {{ form_end(form) }}
+    </div>
+{% endblock %}

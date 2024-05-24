@@ -5,7 +5,106 @@
 {% block body %}
     <h1>Modifier les informations personnelles de {{user.lastname}} {{user.firstname}}</h1>
 
-    <hr>
-    {{ form(form) }}
-    <hr>
+    {{ form_start(form) }}
+
+	<div class="row pt-4">
+		<div class="col-md-6 mb-4">
+
+			<div class="">
+				{{ form_label(form.firstname) }}
+				{{ form_widget(form.firstname) }}
+			</div>
+
+		</div>
+		<div class="col-md-6 mb-4">
+
+			<div class="">
+				{{ form_label(form.lastname) }}
+				{{ form_widget(form.lastname) }}
+			</div>
+
+		</div>
+	</div>
+
+	<div class="row">
+		<div class="col-md-6 mb-4 pb-2">
+
+			<div class="">
+				{{ form_label(form.email) }}
+				{{ form_widget(form.email) }}
+			</div>
+
+		</div>
+		<div class="col-md-6 mb-4 pb-2">
+
+			<div class="">
+				{{ form_label(form.phone_number) }}
+				{{ form_widget(form.phone_number) }}
+			</div>
+
+		</div>
+	</div>
+
+	<div class="row">
+		<div class="col-md-6 mb-4 pb-2">
+
+			<div class="">
+				{{ form_label(form.area_code) }}
+				{{ form_widget(form.area_code) }}
+			</div>
+
+		</div>
+		<div class="col-md-6 mb-4 pb-2">
+
+			<div class="">
+				{{ form_label(form.address) }}
+				{{ form_widget(form.address) }}
+			</div>
+
+		</div>
+	</div>
+
+	<div class="row">
+		<div class="col-md-6 mb-4 pb-2">
+
+			<div class="">
+				{{ form_label(form.zip_code) }}
+				{{ form_widget(form.zip_code) }}
+			</div>
+
+		</div>
+		<div class="col-md-6 mb-4 pb-2">
+
+			<div class="">
+				{{ form_label(form.city) }}
+				{{ form_widget(form.city) }}
+			</div>
+
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-md-6 mb-4 pb-2">
+
+			<div class="">
+				{{ form_label(form.date_of_birth) }}
+				{{ form_widget(form.date_of_birth) }}
+			</div>
+
+		</div>
+		<div class="col-md-6 mb-4 pb-2">
+
+			<div class="">
+				{{ form_label(form.thumbnail) }}
+				{{ form_widget(form.thumbnail) }}
+			</div>
+
+		</div>
+	</div>
+        <div class="row mb-4 mt-3">
+            <div class="col">
+                <button class="btn btn-primary ">{{ button_label|default('Sauvegarder') }}</button>
+                <a href="{{ path('app_secretariat_users_home') }}" class="btn primary-custom-button float-end">Retour sur la liste d'utilisateur</a>
+            </div>
+        </div>
+	{{ form_end(form) }}
 {% endblock %}

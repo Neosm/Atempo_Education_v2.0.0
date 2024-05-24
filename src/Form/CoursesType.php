@@ -30,6 +30,8 @@ class CoursesType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $ecole = $options['ecole'];
+        $isAdminRoute = $options['isAdminRoute'];
+        $user = $options['user'];
         $builder
             ->add('discipline', EntityType::class, [
                 'class' => Disciplines::class,
@@ -97,17 +99,28 @@ class CoursesType extends AbstractType
             ->add('teacher', EntityType::class, [
                 'label' => 'Professeur',
                 'class' => Users::class,
-                'query_builder' => function (EntityRepository $er) use ($ecole) {
-                    return $er->createQueryBuilder('u')
-                    ->join('u.school', 'e')
-                    ->andWhere('u.roles LIKE :val')
-                    ->andWhere('e.id = :ecoleId')
-                    ->setParameter('val', '%["ROLE_TEACHER"]%')
-                    ->setParameter('ecoleId', $ecole->getId());
-            },
+                'query_builder' => function (EntityRepository $er) use ($ecole, $isAdminRoute, $user) {
+                    $qb = $er->createQueryBuilder('u')
+                        ->join('u.school', 'e')
+                        ->andWhere('e.id = :ecoleId')
+                        ->setParameter('ecoleId', $ecole->getId());
+
+                    if ($isAdminRoute) {
+                        // Si vous êtes sur la route administrateur, permettre de choisir parmi tous les professeurs
+                        $qb->andWhere('u.roles LIKE :val')
+                            ->setParameter('val', '%["ROLE_TEACHER"]%');
+                    } else {
+                        // Si vous êtes sur la route Professeur, désactiver le champ et limiter le choix à votre utilisateur
+                        $qb->andWhere('u.id = :userId')
+                            ->setParameter('userId', $user->getId());
+                    }
+
+                    return $qb;
+                },
                 'choice_label' => 'UserIdentifier',
                 'attr' => [
                     'class' => 'form-control',
+                    'disabled' => $isAdminRoute ? false : 'disabled',
                 ]
             ])
             ->add('zoomswitch', CheckboxType::class, [
@@ -153,7 +166,7 @@ class CoursesType extends AbstractType
                 'class' => Rooms::class,
                 'placeholder' => 'Choisir une salle pour le cours',
                 'choice_label' => 'name',
-                'required' => false,
+                'required' => true,
                 'label' => 'Salle',
                 'query_builder' => function (EntityRepository $er) use ($ecole) {
                     return $er->createQueryBuilder('r')
@@ -194,7 +207,7 @@ class CoursesType extends AbstractType
                 },
                 'placeholder' => "Choisissez la classe à laquelle vous faites cours",
                 'attr' => [
-                    'class' => 'student-class-field form-control'
+                    'class' => 'student-class-field'
                 ],
                 'label_attr' => [
                     'class' => 'label-studentClass',
@@ -215,13 +228,14 @@ class CoursesType extends AbstractType
                 'multiple' => true,
                 'required' => false,
                 'attr' => [
-                    'class' => 'students-field form-control'
+                    'class' => 'students-field '
                 ],
                 'label_attr' => [
                     'class' => 'label-students',
                 ],
             ])
             ->add('programs', EntityType::class, [
+                'label' => 'Programmes',
                 'class' => Programs::class,
                 'query_builder' => function (EntityRepository $er) use ($ecole) {
                     return $er->createQueryBuilder('p')
@@ -231,7 +245,7 @@ class CoursesType extends AbstractType
                 },
                 'choice_label' => 'name',
                 'attr' => [
-                    'class' => 'programmes-field form-control'
+                    'class' => 'programmes-field'
                 ],
                 'multiple' => true,
                 'required' => false,
@@ -248,7 +262,7 @@ class CoursesType extends AbstractType
                 },
                 'choice_label' => 'name',
                 'attr' => [
-                    'class' => 'lecons-field form-control'
+                    'class' => 'lecons-field'
                 ],
                 'multiple' => true,
                 'required' => false,
@@ -318,6 +332,8 @@ class CoursesType extends AbstractType
             'data_class' => Courses::class,
             'ecole' => null,
             'equipments' => [],
+            'isAdminRoute' => false, // Par défaut, vous n'êtes pas sur la route administrateur
+            'user' => null, // Utilisateur pour la route Professeur
         ]);
     }
 }

@@ -59,14 +59,14 @@ class EventsType extends AbstractType
                 'multiple' => true,
                 'required' => true,
                 'attr' => [
-                    'class' => 'form-control users-field'
+                    'class' => 'users-field'
                 ],
             ])
             ->add('room', EntityType::class, [
                 'class' => Rooms::class,
                 'placeholder' => 'Choisir une salle pour le cours',
                 'choice_label' => 'name',
-                'required' => false,
+                'required' => true,
                 'label' => 'Salle',
                 'query_builder' => function (EntityRepository $er) use ($ecole) {
                     return $er->createQueryBuilder('r')
