@@ -1,480 +1,507 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Ajouter un nouvel Cours
+{% block title %}
+	Ajouter un nouvel Cours
 {% endblock %}
 
 
 {% block stylesheets %}
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-<link href="https://cdn.jsdelivr.net/npm/tom-select@2.0.0/dist/css/tom-select.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/tom-select@2.0.0/dist/css/tom-select.css" rel="stylesheet">
 
 {% endblock %}
-
 
 {% block body %}
-	<h1>Ajouter un Cours</h1>
+    <div class="container mt-5">
+        <div class="card shadow-lg">
+            <div class="card-header bg-white text-primary-color d-flex align-items-center">
+				<h1 class="h3 mb-3 primary-color mt-3 col-10">
+					<i class="bi bi-music-note-list h3 me-1"></i>
+					{% if app.request.attributes.get('_route') == 'app_calendar_courses_add' %}
+						Ajouter un Cours 
+					{% else %}
+						Modifier le cours
+					{% endif %}
+					
+				</h1>
+            </div>
+            <div class="card-body">
+                {{ form_start(form) }}
 
-{{ form_start(form) }}
+                <div class="form-section">
+                    <h4>Détails du cours</h4>
+                    <div class="form-group">
+                        {{ form_row(form.discipline) }}
+                    </div>
+                    <div class="form-group row">
+                        <div class="col-md-6">
+                            {{ form_row(form.start) }}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form_row(form.duration) }}
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <div class="col-md-6">
+                            {{ form_row(form.teacher) }}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form_row(form.recurrence) }}
+                        </div>
+                    </div>
+                </div>
 
-<div class="container mt-5">
-    <div class="row mb-3">
-        <div class="col">
-            {{ form_row(form.discipline) }}
-        </div>
-    </div>
+                <div id="recurrence-fields" class="form-section">
+                    <h4>Récurrence</h4>
+                    <div class="form-group">
+                        <div class="radio-group row">
+                            {% for choice in form.recurrence_frequency %}
+                                <div class="col-md-4 form-check">
+                                    {{ form_widget(choice, {'attr': {'class': 'form-check-input'}}) }}
+                                    {{ form_label(choice, null, {'attr': {'class': 'form-check-label'}}) }}
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        {{ form_row(form.recurrence_end) }}
+                    </div>
+                </div>
 
-    <div class="row mb-3">
-        <div class="col">
-            {{ form_row(form.start) }}
-        </div>
-        <div class="col">
-            {{ form_row(form.duration) }}
-        </div>
-        <div class="col">
-            {{ form_row(form.teacher) }}
-        </div>
-    </div>
+                <div class="form-section">
+                    <div class="d-flex align-items-center">
+                        <h4 class="flex-grow-1 mb-0">Salle ou lien zoom</h4>
+                        <div class="d-flex flex-column align-items-center form-check form-switch">
+                            <label class="form-check-label text-center" for="{{ form.zoomswitch.vars.id }}">Cours en visio</label>
+                            <div class="custom-switch">
+                                {{ form_widget(form.zoomswitch, {'attr': {'class': 'custom-switch-input'}}) }}
+                                <label class="slider round" for="{{ form.zoomswitch.vars.id }}"></label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        {{ form_row(form.zoom_link) }}
+                        <div class="form-group row">
+                            <div class="col-md-8">
+                                <div class="scrollable-checkboxes">
+                                    <div class="checkbox-column">
+                                        {% for checkbox in form.materials %}
+                                            <div class="checkbox-item">
+                                                {{ form_widget(checkbox, {'attr': {'class': 'form-check-input'}}) }}
+                                                {{ form_label(checkbox) }}
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                {{ form_row(form.room) }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-        <div class="row mb-3">
-        <div class="col">
-            {{ form_row(form.recurrence, {'attr': {'class': 'custom-select form-control'}}) }}
-        </div>
-    </div>
+                <div class="form-section">
+                    <h4>Informations supplémentaires</h4>
+                    <div class="form-group row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="courses_programs">Programmes</label>
+                                {{ form_widget(form.programs) }}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="courses_lessons">Leçons</label>
+                                {{ form_widget(form.lessons) }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-    <div id="recurrence-fields">
-        <div class="row mb-3">
-            <div class="col">
-                {{ form_row(form.recurrence_frequency) }}
+				<div class="form-section">
+                    <div class="d-flex align-items-center">
+                        <h4 class="flex-grow-1 mb-0">Participants</h4>
+                        <div class="d-flex flex-column align-items-center form-check form-switch">
+                            <label class="form-check-label text-center" for="{{ form.studentswitch.vars.id }}">Sélectionner des Élèves</label>
+                            <div class="custom-switch">
+                                {{ form_widget(form.studentswitch, {'attr': {'class': 'custom-switch-input'}}) }}
+                                <label class="slider round" for="{{ form.studentswitch.vars.id }}"></label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        {{ form_row(form.studentClasses) }}
+                        {{ form_row(form.students) }}
+                    </div>
+                </div>
+
+                {% if form.comment is defined %}
+                    <div class="form-section">
+                        <h4>Commentaire</h4>
+                        <div class="form-group">
+                            {{ form_row(form.comment) }}
+                        </div>
+                    </div>
+                {% endif %}
+
+                {% if form.objectives is defined %}
+                    <div class="form-section">
+                        <h4>Objectifs</h4>
+                        <div class="form-group">
+                            {{ form_row(form.objectives) }}
+                        </div>
+                    </div>
+                {% endif %}
+
+                {% if form.modificationScope is defined %}
+                    <div class="form-section">
+                        <h4>Portée de la modification</h4>
+                        <div class="form-group">
+                            <div class="radio-group row">
+                                {% for choice in form.modificationScope %}
+                                    <div class="col-md-6 form-check">
+                                        {{ form_widget(choice, {'attr': {'class': 'form-check-input'}}) }}
+                                        {{ form_label(choice, null, {'attr': {'class': 'form-check-label'}}) }}
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+
+                <div class="text-center mb-4">
+                    <button class="btn primary-custom-button">{{ button_label|default('Sauvegarder') }}</button>
+                    <a href="{{ path('app_calendar_home') }}" class="btn secondary-custom-button ms-3">Retour à l'agenda</a>
+                </div>
+
+                {{ form_row(form.reservedRooms) }}
+                {{ form_end(form) }}
             </div>
         </div>
-        <div class="row mb-3">
-            <div class="col">
-                {{ form_row(form.recurrence_end) }}
-            </div>
-        </div>
     </div>
-
-
-    <div class="row mb-3">
-        <div class="col">
-            <label for="{{ form.zoomswitch.vars.id }}">Cours en visio</label>
-        </div>
-    </div>
-    
-    <div class="row mb-3">
-        <div class="col">
-            <div class="form-check form-switch">
-            {% if app.request.attributes.get('_route') == 'agenda_edit_event' %}
-                {{ form_widget(form.zoomswitch, {'attr': {'checked': event.zoomlink is not null}}) }}
-            {% else %}
-                {{ form_widget(form.zoomswitch) }}
-            {% endif %}
-            {{ form_label(form.zoomswitch) }}
-            </div>
-        {{ form_row(form.zoom_link) }}
-        </div>
-    </div>
-
-    <div class="row mb-3">
-        <div class="col">
-            {{ form_label(form.materials) }}
-            {{ form_widget(form.materials) }}
-        </div>
-        <div class="col">
-            {{ form_row(form.room) }}
-        </div>
-    </div>
-
-    <div class="row mb-3">
-        <div class="col">
-            {{ form_row(form.programs) }}
-        </div>
-        <div class="col">
-            {{ form_row(form.lessons) }}
-        </div>
-    </div>
-
-    <div class="row mb-3">
-        <div class="col">
-            <label for="{{ form.studentswitch.vars.id }}">Sélectionner le ou les élèves concerné(s)</label>
-        </div>
-    </div>
-    
-    <div class="row mb-3">
-        <div class="col">
-            <div class="form-check form-switch">
-            {% if app.request.attributes.get('_route') == 'agenda_edit_event' %}
-                {{ form_widget(form.studentswitch, {'attr': {'checked': event.students is not empty}}) }}
-            {% else %}
-                {{ form_widget(form.studentswitch) }}
-            {% endif %}
-            {{ form_label(form.studentswitch) }}
-            </div>
-        </div>
-    </div>
-
-    <div class="row mb-3">
-        <div class="col">
-            {{ form_row(form.studentClasses) }}
-            {{ form_row(form.students) }}
-        </div>
-    </div>
-
-    {% if form.comment is defined %}
-        <div class="row mb-3">
-            <div class="col">
-                {{ form_row(form.comment) }}
-            </div>
-        </div>
-    {% endif %}
-
-    {% if form.objectives is defined %}
-        <div class="row mb-3">
-            <div class="col">
-                {{ form_row(form.objectives) }}
-            </div>
-        </div>
-    {% endif %}
-
-        {% if form.modificationScope is defined %}
-        <div class="row mb-3">
-            <div class="col">
-                {{ form_row(form.modificationScope) }}
-            </div>
-        </div>
-    {% endif %}
-
-
-    <div class="row mb-4">
-        <div class="col">
-            <button class="btn btn-primary">{{ button_label|default('Sauvegarder') }}</button>
-	        <a href="{{ path('app_calendar_home') }}" class="btn primary-custom-button float-end">Retour à l'agenda</a>
-        </div>
-    </div>
-</div>
-
-{{ form_row(form.reservedRooms, {'attr': {'style': 'display: none;'}}) }}
-
-
-{{ form_end(form) }}
-
-
 {% endblock %}
 
+
+
 {% block javascripts %}
-<script src = "https://cdn.jsdelivr.net/npm/tom-select@2.0.0/dist/js/tom-select.complete.min.js"> </script>
-<script src = "https://cdn.jsdelivr.net/npm/flatpickr"> </script> 
-<script >
-	$(document).ready(function() {
-		var courses_studentClasseselect = new TomSelect('#courses_studentClasses', {
-			hideSelected: true,
-			maxOptions: 10,
-			plugins: {
-				remove_button: {
-					title: 'Supprimer la classe'
-				}
-			}
-		});
-		var courses_studentsSelect = new TomSelect('#courses_students', {
-			hideSelected: true,
-			maxOptions: 60,
-			plugins: {
-				remove_button: {
-					title: 'Supprimer l\'étudiant(e)'
-				}
-			}
-		});
-
-		 // Sélectionnez tous les éléments select[multiple]
-		var allSelects = document.querySelectorAll('select[multiple]');
-
-		// Filtrez les éléments déjà utilisés par les deux premiers TomSelect
-		var unusedSelects = Array.from(allSelects).filter(function(select) {
-			return select.id !== 'courses_studentClasses' && select.id !== 'courses_students';
-		});
-
-		// Initialisez un TomSelect pour les éléments restants
-		unusedSelects.forEach(function(select) {
-			new TomSelect(select, {
+	<script src = "https://cdn.jsdelivr.net/npm/tom-select@2.0.0/dist/js/tom-select.complete.min.js"> </script>
+	<script src = "https://cdn.jsdelivr.net/npm/flatpickr"> </script> 
+	<script >
+		$(document).ready(function() {
+			var courses_studentClasseselect = new TomSelect('#courses_studentClasses', {
 				hideSelected: true,
-				maxOptions: 20,
+				maxOptions: 10,
 				plugins: {
 					remove_button: {
-						title: 'Retirer'
+						title: 'Supprimer la classe'
 					}
 				}
 			});
-		});
-		
-		$('#courses_students').parent().hide();
-		$('#courses_studentClasses').parent().show();
+			var courses_studentsSelect = new TomSelect('#courses_students', {
+				hideSelected: true,
+				maxOptions: 60,
+				plugins: {
+					remove_button: {
+						title: 'Supprimer l\'étudiant(e)'
+					}
+				}
+			});
 
-		// Écouter les changements sur le switch
-		$('#courses_studentswitch').on('change', function() {
-			if ($(this).is(':checked')) {
-			// Si le switch est coché, masquer le premier TomSelect et afficher le deuxième
-			$('#courses_studentClasses').parent().hide();
-			$('#courses_students').parent().show();
+			// Sélectionnez tous les éléments select[multiple]
+			var allSelects = document.querySelectorAll('select[multiple]');
 
-			// Clear la sélection du premier TomSelect
-			courses_studentClasseselect.clear();
-			} else {
-			// Si le switch est décoché, masquer le deuxième TomSelect et afficher le premier
+			// Filtrez les éléments déjà utilisés par les deux premiers TomSelect
+			var unusedSelects = Array.from(allSelects).filter(function(select) {
+				return select.id !== 'courses_studentClasses' && select.id !== 'courses_students';
+			});
+
+			// Initialisez un TomSelect pour les éléments restants
+			unusedSelects.forEach(function(select) {
+				new TomSelect(select, {
+					hideSelected: true,
+					maxOptions: 20,
+					plugins: {
+						remove_button: {
+							title: 'Retirer'
+						}
+					}
+				});
+			});
+			
 			$('#courses_students').parent().hide();
 			$('#courses_studentClasses').parent().show();
 
-			// Clear la sélection du deuxième TomSelect
-			courses_studentsSelect.clear();
-			}
-		});
+			// Écouter les changements sur le switch
+			$('#courses_studentswitch').on('change', function() {
+				if ($(this).is(':checked')) {
+				// Si le switch est coché, masquer le premier TomSelect et afficher le deuxième
+				$('#courses_studentClasses').parent().hide();
+				$('#courses_students').parent().show();
 
-		var zoomLinkSelect = $('#courses_zoom_link');
-		var roomSwitchselect = $('#courses_room');
-		var roomSwitchInput = $('#courses_zoomswitch');
+				// Clear la sélection du premier TomSelect
+				courses_studentClasseselect.clear();
+				} else {
+				// Si le switch est décoché, masquer le deuxième TomSelect et afficher le premier
+				$('#courses_students').parent().hide();
+				$('#courses_studentClasses').parent().show();
 
-		// Masquer le zoom au chargement de la page
-		zoomLinkSelect.hide();
-		$('.label-zoom').hide();
+				// Clear la sélection du deuxième TomSelect
+				courses_studentsSelect.clear();
+				}
+			});
 
-		// Afficher les salles par défaut
-		roomSwitchselect.show();
-		$('#courses_materials').show();
-		$('.label-room').show();
-		$('.label-materials').show();
-		// Écouter les changements sur le champ switch room
+			var zoomLinkSelect = $('#courses_zoom_link');
+			var roomSwitchselect = $('#courses_room');
+			var roomSwitchInput = $('#courses_zoomswitch');
 
-		roomSwitchInput.on('change', function() {
-			if ($(this).is(':checked')) {
-				$('.label-room').hide();
-				$('.label-materials').hide();
-				$('#courses_materials').hide();
-				roomSwitchselect.hide();
+			// Masquer le zoom au chargement de la page
+			zoomLinkSelect.hide();
+			$('.label-zoom').hide();
 
-				zoomLinkSelect.show();
-				$('.label-zoom').show();
+			// Afficher les salles par défaut
+			roomSwitchselect.show();
+			$('.scrollable-checkboxes').show();
+			$('.label-room').show();
+			$('.label-materials').show();
+			// Écouter les changements sur le champ switch room
 
-				// Vider le champ de la classe et réinitialiser sa valeur
-				roomSwitchselect.val('').trigger('change');
-				$('#event_form_materials .form-check-input').prop('checked', false).trigger('change');
+			roomSwitchInput.on('change', function() {
+				if ($(this).is(':checked')) {
+					$('.label-room').hide();
+					$('.label-materials').hide();
+					$('.scrollable-checkboxes').hide();
+					roomSwitchselect.hide();
 
-			} else {
-				zoomLinkSelect.hide();
-				$('.label-zoom').hide();
+					zoomLinkSelect.show();
+					$('.label-zoom').show();
 
-				$('.label-room').show();
-				roomSwitchselect.show();
-				$('#courses_materials').show();
-				$('.label-materials').show();
+					// Vider le champ des checkbox et réinitialiser sa valeur
+					roomSwitchselect.val('').trigger('change');
+					$('.checkbox-item .form-check-input').prop('checked', false).trigger('change');
 
-				// Vider le champ des élèves et réinitialiser sa valeur
-				zoomLinkSelect.val(null).trigger('change');
-			}
-		});
+				} else {
+					zoomLinkSelect.hide();
+					$('.label-zoom').hide();
 
-		function roundUpHour(date) {
-			var hour = date.getHours();
-			
-			// Arrondir à l'heure supérieure
-			if (date.getMinutes() > 0) {
-				hour += 1;
-			}
+					$('.label-room').show();
+					roomSwitchselect.show();
+					$('.scrollable-checkboxes').show();
+					$('.label-materials').show();
 
-			// Retourner l'heure arrondie
-			return hour;
-		}
+					// Vider le champ zoom et réinitialiser sa valeur
+					zoomLinkSelect.val(null).trigger('change');
+				}
+			});
 
-		function roundUpDateAndHour() {
-			var currentDate = new Date();
-			var roundedHour = roundUpHour(currentDate);
-			
-			// Réinitialiser les minutes et les secondes à zéro
-			currentDate.setMinutes(0);
-			currentDate.setSeconds(0);
-
-			// Si l'heure arrondie dépasse minuit, passer au jour suivant
-			if (roundedHour >= 24) {
-				currentDate.setDate(currentDate.getDate() + 1);
-				roundedHour = 0; // Réinitialiser l'heure à zéro
-			}
-
-			// Définir l'heure arrondie sur la date actuelle
-			currentDate.setHours(roundedHour);
-
-			// Retourner la date et l'heure arrondies
-			return currentDate;
-		}
-		function initDatePicker(selector, options) {
-			var roundedDate = roundUpDateAndHour();
-			var flatpickrOptions = {
-				defaultDate: roundedDate,
-				enableTime: options.enableTime || false,
-				time_24hr: true, // Utiliser le format 24 heures
-				monthSelectorType: 'static',
-				disableMobile: true,
-				altInput: true,
-				altFormat: "j M Y, H:i",
-				dateFormat: "Y-m-d H:i:s",
-
+			function roundUpHour(date) {
+				var hour = date.getHours();
 				
-				...options
-			};
-
-			flatpickr(selector, flatpickrOptions);
-		}
-
-		// Utilisation du DatePicker avec des options personnalisées
-		initDatePicker('.datetimepickr', {
-			enableTime: true,
-			allowInput: true,
-			nextArrow: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Pro 6.1.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2022 Fonticons, Inc. --><path d="M96 480c-8.188 0-16.38-3.125-22.62-9.375c-12.5-12.5-12.5-32.75 0-45.25L242.8 256L73.38 86.63c-12.5-12.5-12.5-32.75 0-45.25s32.75-12.5 45.25 0l192 192c12.5 12.5 12.5 32.75 0 45.25l-192 192C112.4 476.9 104.2 480 96 480z"/></svg>`,
-			prevArrow: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Pro 6.1.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2022 Fonticons, Inc. --><path d="M224 480c-8.188 0-16.38-3.125-22.62-9.375l-192-192c-12.5-12.5-12.5-32.75 0-45.25l192-192c12.5-12.5 32.75-12.5 45.25 0s12.5 32.75 0 45.25L77.25 256l169.4 169.4c12.5 12.5 12.5 32.75 0 45.25C240.4 476.9 232.2 480 224 480z"/></svg>`,
-			locale: {
-				firstDayOfWeek: 1,
-				weekdays: {
-					shorthand: ["dim", "lun", "mar", "mer", "jeu", "ven", "sam"],
-					longhand: [
-						"dimanche",
-						"lundi",
-						"mardi",
-						"mercredi",
-						"jeudi",
-						"vendredi",
-						"samedi",
-					],
-				},
-				months: {
-					shorthand: [
-						"janv",
-						"févr",
-						"mars",
-						"avr",
-						"mai",
-						"juin",
-						"juil",
-						"août",
-						"sept",
-						"oct",
-						"nov",
-						"déc",
-					],
-					longhand: [
-						"Janvier",
-						"Février",
-						"Mars",
-						"Avril",
-						"Mai",
-						"Juin",
-						"Juillet",
-						"Août",
-						"Septembre",
-						"Octobre",
-						"Novembre",
-						"Décembre",
-					],
-				},
-				ordinal: (nth) => {
-					if (nth > 1) return "";
-					return "er";
-				},
-				rangeSeparator: " au ",
-				weekAbbreviation: "Sem",
-				scrollTitle: "Défiler pour augmenter la valeur",
-				toggleTitle: "Cliquer pour basculer",
-			}, // Supprimez la virgule ici
-			onDayCreate: function(_, _, _, dayElem) {
-				if (dayElem.dateObj.getDay() === 0 || dayElem.dateObj.getDay() === 6) {
-					dayElem.className += ' weekend-days';
+				// Arrondir à l'heure supérieure
+				if (date.getMinutes() > 0) {
+					hour += 1;
 				}
+
+				// Retourner l'heure arrondie
+				return hour;
 			}
-		});
 
-		// Vous pouvez également créer une fonction pour le DateAndTimePicker si nécessaire
-		function DateAndTimePicker(selector) {
-			initDatePicker(selector, {
-				enableTime: true,
-			});
-		}
+			function roundUpDateAndHour() {
+				var currentDate = new Date();
+				var roundedHour = roundUpHour(currentDate);
+				
+				// Réinitialiser les minutes et les secondes à zéro
+				currentDate.setMinutes(0);
+				currentDate.setSeconds(0);
 
-		var materialsCheckboxes = document.querySelectorAll('.materials-checkboxes input[type="checkbox"]');
-		var roomSelect = document.querySelector('.room-select');
-		var startField = $('#courses_start');
-		var durationField = $('#courses_duration');
-		var zoomlinkField = $('#courses_zoom_link');
-		// Champ zoomlink
-
-		// Écouter l'événement 'change' sur les champs de matériel et de durée
-		materialsCheckboxes.forEach(function(checkbox) {
-			checkbox.addEventListener('change', updateRooms);
-		});
-
-		durationField.on('input', updateRooms);
-
-		// Écouteur d'événement pour le champ zoomlink
-		zoomlinkField.on('input', updateRooms);
-
-		// Fonction pour mettre à jour les salles en fonction des matériaux sélectionnés, de l'heure et de la durée
-		function updateRooms() {
-			var selectedMaterials = Array.from(materialsCheckboxes).filter(function(checkbox) {
-				return checkbox.checked;
-			}).map(function(checkbox) {
-				return checkbox.value;
-			});
-
-			var startValue = startField.val();
-			var durationValue = durationField.val();
-			var zoomlinkValue = zoomlinkField.val();
-			// Récupérer la valeur du champ zoomlink
-
-			// Construire l'URL de l'API avec les paramètres appropriés
-			var apiUrl = '/agenda/cours/api/rooms';
-			apiUrl += '?materials=' + selectedMaterials.join(',');
-			apiUrl += '&start=' + startValue;
-			apiUrl += '&duration=' + durationValue;
-			apiUrl += '&zoomlink=' + zoomlinkValue;
-			// Ajouter la valeur du champ zoomlink
-
-			// Fetch des salles en fonction des équipements sélectionnés, de l'heure et de la durée
-			fetch(apiUrl).then(function(response) {
-				return response.json();
-			}).then(function(rooms) { // Mise à jour des options de sélection de la salle
-				while (roomSelect.firstChild) {
-					roomSelect.removeChild(roomSelect.firstChild);
+				// Si l'heure arrondie dépasse minuit, passer au jour suivant
+				if (roundedHour >= 24) {
+					currentDate.setDate(currentDate.getDate() + 1);
+					roundedHour = 0; // Réinitialiser l'heure à zéro
 				}
 
-				rooms.forEach(function(room) {
-					var option = document.createElement('option');
-					option.value = room.id;
-					option.textContent = room.name;
-					roomSelect.appendChild(option);
-				});
-			}).catch(function(error) {
-				console.log(error);
+				// Définir l'heure arrondie sur la date actuelle
+				currentDate.setHours(roundedHour);
+
+				// Retourner la date et l'heure arrondies
+				return currentDate;
+			}
+			function initDatePicker(selector, options) {
+				var roundedDate = roundUpDateAndHour();
+				var flatpickrOptions = {
+					defaultDate: roundedDate,
+					enableTime: options.enableTime || false,
+					time_24hr: true, // Utiliser le format 24 heures
+					monthSelectorType: 'static',
+					disableMobile: true,
+					altInput: true,
+					altFormat: "j M Y, H:i",
+					dateFormat: "Y-m-d H:i:s",
+
+					
+					...options
+				};
+
+				var eventStart = '{{ eventStart|default(null) }}';
+				if (eventStart) {
+					flatpickrOptions.defaultDate = eventStart;
+				}
+
+				flatpickr(selector, flatpickrOptions);
+			}
+			// Utilisation du DatePicker avec des options personnalisées
+			initDatePicker('.datetimepickr', {
+				enableTime: true,
+				allowInput: true,
+				nextArrow: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Pro 6.1.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2022 Fonticons, Inc. --><path d="M96 480c-8.188 0-16.38-3.125-22.62-9.375c-12.5-12.5-12.5-32.75 0-45.25L242.8 256L73.38 86.63c-12.5-12.5-12.5-32.75 0-45.25s32.75-12.5 45.25 0l192 192c12.5 12.5 12.5 32.75 0 45.25l-192 192C112.4 476.9 104.2 480 96 480z"/></svg>`,
+				prevArrow: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Pro 6.1.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2022 Fonticons, Inc. --><path d="M224 480c-8.188 0-16.38-3.125-22.62-9.375l-192-192c-12.5-12.5-12.5-32.75 0-45.25l192-192c12.5-12.5 32.75-12.5 45.25 0s12.5 32.75 0 45.25L77.25 256l169.4 169.4c12.5 12.5 12.5 32.75 0 45.25C240.4 476.9 232.2 480 224 480z"/></svg>`,
+				locale: {
+					firstDayOfWeek: 1,
+					weekdays: {
+						shorthand: ["dim", "lun", "mar", "mer", "jeu", "ven", "sam"],
+						longhand: [
+							"dimanche",
+							"lundi",
+							"mardi",
+							"mercredi",
+							"jeudi",
+							"vendredi",
+							"samedi",
+						],
+					},
+					months: {
+						shorthand: [
+							"janv",
+							"févr",
+							"mars",
+							"avr",
+							"mai",
+							"juin",
+							"juil",
+							"août",
+							"sept",
+							"oct",
+							"nov",
+							"déc",
+						],
+						longhand: [
+							"Janvier",
+							"Février",
+							"Mars",
+							"Avril",
+							"Mai",
+							"Juin",
+							"Juillet",
+							"Août",
+							"Septembre",
+							"Octobre",
+							"Novembre",
+							"Décembre",
+						],
+					},
+					ordinal: (nth) => {
+						if (nth > 1) return "";
+						return "er";
+					},
+					rangeSeparator: " au ",
+					weekAbbreviation: "Sem",
+					scrollTitle: "Défiler pour augmenter la valeur",
+					toggleTitle: "Cliquer pour basculer",
+				}, // Supprimez la virgule ici
+				onDayCreate: function(_, _, _, dayElem) {
+					if (dayElem.dateObj.getDay() === 0 || dayElem.dateObj.getDay() === 6) {
+						dayElem.className += ' weekend-days';
+					}
+				}
 			});
+
+			// Vous pouvez également créer une fonction pour le DateAndTimePicker si nécessaire
+			function DateAndTimePicker(selector) {
+				initDatePicker(selector, {
+					enableTime: true,
+				});
+			}
+
+			var materialsCheckboxes = document.querySelectorAll('.checkbox-item input[type="checkbox"]');
+			var roomSelect = document.querySelector('.room-select');
+			var startField = $('#courses_start');
+			var durationField = $('#courses_duration');
+			var zoomlinkField = $('#courses_zoom_link');
+			// Champ zoomlink
+
+			// Écouter l'événement 'change' sur les champs de matériel et de durée
+			materialsCheckboxes.forEach(function(checkbox) {
+				checkbox.addEventListener('change', updateRooms);
+			});
+
+			durationField.on('input', updateRooms);
+
+			// Écouteur d'événement pour le champ zoomlink
+			zoomlinkField.on('input', updateRooms);
+
+			// Fonction pour mettre à jour les salles en fonction des matériaux sélectionnés, de l'heure et de la durée
+			function updateRooms() {
+				var selectedMaterials = Array.from(materialsCheckboxes).filter(function(checkbox) {
+					return checkbox.checked;
+				}).map(function(checkbox) {
+					return checkbox.value;
+				});
+
+				var startValue = startField.val();
+				var durationValue = durationField.val();
+				var zoomlinkValue = zoomlinkField.val();
+				// Récupérer la valeur du champ zoomlink
+
+				// Construire l'URL de l'API avec les paramètres appropriés
+				var apiUrl = '/agenda/api/salles';
+				apiUrl += '?materials=' + selectedMaterials.join(',');
+				apiUrl += '&start=' + startValue;
+				apiUrl += '&duration=' + durationValue;
+				apiUrl += '&zoomlink=' + zoomlinkValue;
+				// Ajouter la valeur du champ zoomlink
+
+				// Fetch des salles en fonction des équipements sélectionnés, de l'heure et de la durée
+				fetch(apiUrl).then(function(response) {
+					return response.json();
+				}).then(function(rooms) { // Mise à jour des options de sélection de la salle
+					while (roomSelect.firstChild) {
+						roomSelect.removeChild(roomSelect.firstChild);
+					}
+
+					rooms.forEach(function(room) {
+						var option = document.createElement('option');
+						option.value = room.id;
+						option.textContent = room.name;
+						roomSelect.appendChild(option);
+					});
+				}).catch(function(error) {
+					console.log(error);
+				});
+			}
+
+			// Appeler la fonction pour mettre à jour les salles initialement
+			updateRooms();
+
+			// Écouteur d'événement pour le champ de l'heure de début
+			startField.change(updateRooms);
+			$('#courses_zoomswitch').on('change', updateRooms); // Écouteur sur le champ zoomswitch
+
+		var recurrenceFields = $('#recurrence-fields');
+		var isRecurringSelect = $('#courses_recurrence');
+
+		// Masquer les champs de récurrence au chargement de la page
+		recurrenceFields.hide();
+
+		// Écouter les changements sur le champ isRecurring (liste déroulante)
+		isRecurringSelect.on('change', function() {
+		var selectedValue = $(this).val();
+
+		if (selectedValue === '1') {
+			recurrenceFields.show();
+		} else {
+			recurrenceFields.hide();
 		}
-
-		// Appeler la fonction pour mettre à jour les salles initialement
-		updateRooms();
-
-		// Écouteur d'événement pour le champ de l'heure de début
-		startField.change(updateRooms);
-		$('#courses_zoomswitch').on('change', updateRooms); // Écouteur sur le champ zoomswitch
-
-    var recurrenceFields = $('#recurrence-fields');
-    var isRecurringSelect = $('#courses_recurrence');
-
-    // Masquer les champs de récurrence au chargement de la page
-    recurrenceFields.hide();
-
-    // Écouter les changements sur le champ isRecurring (liste déroulante)
-    isRecurringSelect.on('change', function() {
-    var selectedValue = $(this).val();
-
-    if (selectedValue === '1') {
-        recurrenceFields.show();
-    } else {
-        recurrenceFields.hide();
-    }
-});
+	});
 
     // Appeler la fonction initiale pour vérifier l'état initial de la liste déroulante
     isRecurringSelect.trigger('change');

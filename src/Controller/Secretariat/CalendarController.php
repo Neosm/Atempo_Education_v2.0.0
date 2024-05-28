@@ -963,7 +963,6 @@ class CalendarController extends AbstractController
             $allEvents[] = ['event' => $evaluation, 'type' => 'evaluation'];
         }
 
-        dump($allEvents);
 
         // Calculer la date du premier et dernier événement
         $firstEventItem = reset($allEvents);
@@ -986,8 +985,6 @@ class CalendarController extends AbstractController
         foreach ($allEvents as $item) {
             $event = $item['event'];
             $type = $item['type'];
-            dump($event);
-
             $content .= "BEGIN:VEVENT\r\n";
             $content .= "CATEGORIES:ATempo.Education\r\n";
             $content .= "UID:" . $event->getIdUnique() . " " . $user . "\r\n";

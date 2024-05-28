@@ -53,7 +53,6 @@ class CoursesType extends AbstractType
                 'html5' => false,
                 'attr' => [
                     'class' => 'form-control datetimepickr my-flatpickr',
-                    'data-route' => '/agenda/cours/api/reserved_rooms', // Route pour récupérer les salles réservées
                 ],
             ])
             ->add('duration', IntegerType::class, [
@@ -153,13 +152,7 @@ class CoursesType extends AbstractType
                 'expanded' => true,
                 'required' => false,
                 'attr' => [
-                    'class' => 'materials-field materials-checkboxes'
-                ],
-                'row_attr' =>[
-                    "id" => "row-materials"
-                ],
-                'label_attr' => [
-                    'class' => 'label-materials form-check-label',
+                    'class' => 'materials-field'
                 ],
             ])
             ->add('room', EntityType::class, [
@@ -194,7 +187,7 @@ class CoursesType extends AbstractType
                 ],
             ])
             ->add('studentClasses', EntityType::class, [
-                'label' => 'Classe',
+                'label' => 'Classes',
                 'multiple' => true,
                 'class' => StudentClasses::class,
                 'choice_label' => 'name',

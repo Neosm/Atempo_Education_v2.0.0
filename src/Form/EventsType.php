@@ -9,10 +9,14 @@ use App\Entity\Users;
 use Doctrine\ORM\EntityRepository;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\DateTimeType;
+use Symfony\Component\Form\Extension\Core\Type\HiddenType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
+use Symfony\Component\Form\FormEvent;
+use Symfony\Component\Form\FormEvents;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class EventsType extends AbstractType
@@ -26,16 +30,13 @@ class EventsType extends AbstractType
                 'attr' => [
                     'class' => 'form-control'
                 ],
-                'label_attr' => [
-                    'class' => 'form-label'
-                ]
             ])
             ->add('start', DateTimeType::class, [
                 'label' => 'Heure de début',
                 'widget' => 'single_text',
                 'html5' => false,
                 'attr' => [
-                    'class' => 'form-control datetimepickr my-flatpickr',
+                    'class' => 'form-control myDateTimePicker datetimepickr-start',
                 ],
             ])
             ->add('end', DateTimeType::class, [
@@ -43,7 +44,7 @@ class EventsType extends AbstractType
                 'widget' => 'single_text',
                 'html5' => false,
                 'attr' => [
-                    'class' => 'form-control datetimepickr my-flatpickr',
+                    'class' => 'form-control myDateTimePicker datetimepickr-end',
                 ],
             ])
             ->add('users', EntityType::class, [
@@ -60,6 +61,23 @@ class EventsType extends AbstractType
                 'required' => true,
                 'attr' => [
                     'class' => 'users-field'
+                ],
+            ])
+            ->add('materials', ChoiceType::class, [
+                'label' => 'Trier les salles par équipement',
+                'choices' => array_unique($options['equipments']),
+                'mapped' => false,
+                'multiple' => true,
+                'expanded' => true,
+                'required' => false,
+                'attr' => [
+                    'class' => 'materials-field materials-checkboxes'
+                ],
+                'row_attr' =>[
+                    "id" => "row-materials"
+                ],
+                'label_attr' => [
+                    'class' => 'label-materials form-check-label',
                 ],
             ])
             ->add('room', EntityType::class, [
@@ -86,8 +104,22 @@ class EventsType extends AbstractType
                 'attr' => [
                     'class' => 'form-control',
                 ]
-            ])
+            ])->add('reservedRooms', HiddenType::class, [
+                'mapped' => false,
+            ]);
         ;
+        $builder->addEventListener(FormEvents::PRE_SET_DATA, function (FormEvent $event) {
+            $form = $event->getForm();
+            $data = $event->getData();
+
+            if ($data instanceof Events && $data->getId() !== null) {
+                // Pré-remplir les salles réservées si l'événement existe déjà
+                $reservedRooms = $data->getRoom();
+                if ($reservedRooms !== null) {
+                    $form->get('reservedRooms')->setData($reservedRooms->getId());
+                }
+            }
+        });
     }
 
     public function configureOptions(OptionsResolver $resolver): void
@@ -95,6 +127,7 @@ class EventsType extends AbstractType
         $resolver->setDefaults([
             'data_class' => Events::class,
             'ecole' => null,
+            'equipments' => [],
         ]);
     }
 }

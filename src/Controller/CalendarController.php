@@ -111,7 +111,7 @@ class CalendarController extends AbstractController
                 $objectif = $event->getObjectives();
                 $commentaire = null;
             } elseif ($event->getStart() < new \DateTime &  $event->getComment() == null) {
-                $commentaire = "Aucun commentaire défini pour le prochain cours";
+                $commentaire = "Aucun commentaire n'a été défini pour cet évènement";
                 $objectif = null;
             } elseif ($event->getStart() < new \DateTime) {
                 $commentaire = $event->getComment();
@@ -124,7 +124,7 @@ class CalendarController extends AbstractController
             }
             // Convertir l'objet Event en tableau associatif
             $eventData = [
-                'type' => 'cours',
+                'type' => 'courses',
                 'title' => $event->getName(),
                 'id' => $event->getId(),
                 'start' => $event->getStart()->format('Y-m-d H:i:s'),
@@ -184,7 +184,7 @@ class CalendarController extends AbstractController
                     }
                     // Convertir l'objet Event en tableau associatif
                     $eventData = [
-                        'type' => 'evaluation',
+                        'type' => 'evaluations',
                         'title' => $event->getName(),
                         'id' => $event->getId(),
                         'start' => $event->getStart()->format('Y-m-d H:i:s'),
@@ -516,15 +516,23 @@ class CalendarController extends AbstractController
     }
 
     #[Route('/agenda/cours/{id}/modifier', name: 'app_calendar_courses_modify')]
-    public function coursesmodify(Courses $courses,Request $request, EntityManagerInterface $entityManager): Response
+    public function coursesmodify(Courses $courses,Request $request, EntityManagerInterface $entityManager, RoomsRepository $roomsRepository): Response
     {
         // Sauvegardez l'heure de début d'origine
         $originalStart = $courses->getStart();
         $user = $this->getUser();
         $isAdminRoute = false;
         $ecole =  $user->getSchool();
+        $equipments = [];
 
-        $form = $this->createForm(CoursesType::class, $courses, ['ecole' => $ecole, 'isAdminRoute' => $isAdminRoute, 'user' => $user]);
+        $rooms = $roomsRepository->findBy(['school' => $ecole]);
+        foreach ($rooms as $room) {
+            foreach ($room->getEquipments() as $equipment) {
+                $equipments[$equipment] = $equipment;
+            }
+        }
+
+        $form = $this->createForm(CoursesType::class, $courses, ['ecole' => $ecole, 'equipments' => $equipments, 'isAdminRoute' => $isAdminRoute, 'user' => $user]);
         $form->handleRequest($request);
 
 
@@ -943,6 +951,7 @@ class CalendarController extends AbstractController
         return $this->render('calendar/form.html.twig', [
             'form' => $form->createView(),
             'event' => $courses,
+            'eventStart' => $courses->getStart()->format('Y-m-d H:i:s'),
         ]);
     }
 
@@ -958,6 +967,7 @@ class CalendarController extends AbstractController
         return $this->render('calendar/show.html.twig', [
             'event' => $courses,
             'recurrence' => $recurrence,
+            'type' => 'courses'
         ]);
     }
 
@@ -975,7 +985,7 @@ class CalendarController extends AbstractController
         $allEvents = [];
 
         foreach ($courses as $course) {
-            $allEvents[] = ['event' => $course, 'type' => 'course'];
+            $allEvents[] = ['event' => $course, 'type' => 'courses'];
         }
 
         foreach ($events as $event) {
@@ -983,10 +993,9 @@ class CalendarController extends AbstractController
         }
 
         foreach ($evaluations as $evaluation) {
-            $allEvents[] = ['event' => $evaluation, 'type' => 'evaluation'];
+            $allEvents[] = ['event' => $evaluation, 'type' => 'evaluations'];
         }
 
-        dump($allEvents);
 
         // Calculer la date du premier et dernier événement
         $firstEventItem = reset($allEvents);
@@ -1009,7 +1018,6 @@ class CalendarController extends AbstractController
         foreach ($allEvents as $item) {
             $event = $item['event'];
             $type = $item['type'];
-            dump($event);
 
             $content .= "BEGIN:VEVENT\r\n";
             $content .= "CATEGORIES:ATempo.Education\r\n";
@@ -1075,15 +1083,22 @@ class CalendarController extends AbstractController
     }
 
     #[Route('/agenda/examen/creer', name: 'app_calendar_evaluation_add')]
-    public function evaluationadd(Request $request, EntityManagerInterface $entityManager): Response
+    public function evaluationadd(Request $request, EntityManagerInterface $entityManager, RoomsRepository $roomsRepository): Response
     {
         $event = new Evaluations();
         $user = $this->getUser();
         $isAdminRoute = false;
         $ecole =  $user->getSchool();
-        
+        $equipments = [];
 
-        $form = $this->createForm(EvaluationsType::class, $event, ['ecole' => $ecole, 'isAdminRoute' => $isAdminRoute, 'user' => $user]);
+        $rooms = $roomsRepository->findBy(['school' => $ecole]);
+        foreach ($rooms as $room) {
+            foreach ($room->getEquipments() as $equipment) {
+                $equipments[$equipment] = $equipment;
+            }
+        }
+
+        $form = $this->createForm(EvaluationsType::class, $event, ['ecole' => $ecole, 'isAdminRoute' => $isAdminRoute, 'equipments' => $equipments, 'user' => $user]);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
@@ -1154,14 +1169,19 @@ class CalendarController extends AbstractController
     }
 
     #[Route('/agenda/examen/{id}/modifier', name: 'app_calendar_evaluation_modify')]
-    public function evaluationmodify(Evaluations $evaluations, EntityManagerInterface $entityManager, Request $request): Response
+    public function evaluationmodify(Evaluations $evaluations, EntityManagerInterface $entityManager, Request $request, RoomsRepository $roomsRepository): Response
     {
         $user = $this->getUser();
         $isAdminRoute = false;
         $ecole =  $user->getSchool();
-        
+        $rooms = $roomsRepository->findBy(['school' => $ecole]);
+        foreach ($rooms as $room) {
+            foreach ($room->getEquipments() as $equipment) {
+                $equipments[$equipment] = $equipment;
+            }
+        }
 
-        $form = $this->createForm(EvaluationsType::class, $evaluations, ['ecole' => $ecole, 'isAdminRoute' => $isAdminRoute, 'user' => $user]);
+        $form = $this->createForm(EvaluationsType::class, $evaluations, ['ecole' => $ecole, 'equipments' => $equipments, 'isAdminRoute' => $isAdminRoute, 'user' => $user]);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
@@ -1216,6 +1236,7 @@ class CalendarController extends AbstractController
 
         return $this->render('evaluation/form.html.twig', [
             'form' => $form->createView(),
+            'eventStart' => $evaluations->getStart()->format('Y-m-d H:i:s'),
         ]);
     }
 
@@ -1225,17 +1246,26 @@ class CalendarController extends AbstractController
 
         return $this->render('evaluation/show.html.twig', [
             'event' => $evaluations,
+            'type' => 'evaluations'
         ]);
     }
 
     #[Route('/agenda/evenement/creer', name: 'app_calendar_event_add')]
-    public function eventadd(Request $request, EntityManagerInterface $entityManager): Response
+    public function eventadd(Request $request, EntityManagerInterface $entityManager, RoomsRepository $roomsRepository): Response
     {
         $event = new Events();
         $ecole =  $this->getUser()->getSchool();
         
+        $equipments = [];
 
-        $form = $this->createForm(EventsType::class, $event, ['ecole' => $ecole]);
+        $rooms = $roomsRepository->findBy(['school' => $ecole]);
+        foreach ($rooms as $room) {
+            foreach ($room->getEquipments() as $equipment) {
+                $equipments[$equipment] = $equipment;
+            }
+        }
+
+        $form = $this->createForm(EventsType::class, $event, ['ecole' => $ecole, 'equipments' => $equipments]);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
@@ -1274,11 +1304,19 @@ class CalendarController extends AbstractController
     }
 
     #[Route('/agenda/evenement/{id}/modifier', name: 'app_calendar_event_modify')]
-    public function eventmodify(Events $event, EntityManagerInterface $entityManager, Request $request): Response
+    public function eventmodify(Events $event, EntityManagerInterface $entityManager, Request $request, RoomsRepository $roomsRepository): Response
     {
         $ecole =  $this->getUser()->getSchool();
+        $equipments = [];
+
+        $rooms = $roomsRepository->findBy(['school' => $ecole]);
+        foreach ($rooms as $room) {
+            foreach ($room->getEquipments() as $equipment) {
+                $equipments[$equipment] = $equipment;
+            }
+        }
         
-        $form = $this->createForm(EventsType::class, $event, ['ecole' => $ecole]);
+        $form = $this->createForm(EventsType::class, $event, ['ecole' => $ecole, 'equipments' => $equipments]);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
@@ -1304,6 +1342,8 @@ class CalendarController extends AbstractController
 
         return $this->render('event/form.html.twig', [
             'form' => $form->createView(),
+            'eventStart' => $event->getStart()->format('Y-m-d H:i:s'),
+            'eventEnd' => $event->getEnd()->format('Y-m-d H:i:s'),
         ]);
     }
 
@@ -1313,40 +1353,38 @@ class CalendarController extends AbstractController
 
         return $this->render('event/show.html.twig', [
             'event' => $events,
+            'type' => 'event'
         ]);
     }
 
     #[Route('/agenda/api/salles', name: 'app_calendar_api_rooms')]
-    public function apiRoomChange(Request $request, SerializerInterface $serializer, CoursesRepository $coursesRepository): Response
+    public function apiRoomChange(Request $request, SerializerInterface $serializer, CoursesRepository $coursesRepository, RoomsRepository $roomRepository): Response
     {
         $materialIds = $request->query->get('materials');
         $materialIdsArray = explode(',', $materialIds);
         $start = $request->query->get('start');
-        // Récupérer les données envoyées via AJAX
+        $duration = $request->query->get('duration');
         $zoomlink = $request->query->get('zoomlink');
+        $tryend = $request->query->get('end');
         $ecole = $this->getUser()->getSchool();
+        if($duration !== null) {
 
-        $duration = $request->query->get('duration'); // Récupérer la durée depuis la requête
-        $startTime = new \DateTime($start);
-        $end = clone $startTime;
-        $end->add(new \DateInterval('PT' . intval($duration) . 'M')); // Ajouter la durée en minutes
+            $startTime = new \DateTime($start);
+            $end = clone $startTime;
+            $end->add(new \DateInterval('PT' . intval($duration) . 'M'));
+            $endAsString = $end->format('Y-m-d H:i');
+    
+            $reservedRooms = $roomRepository->findReservedRooms($start, $endAsString);
+        } else {
+            
+        $reservedRooms = $roomRepository->findReservedRooms($start, $tryend);
+        }
 
-        // Formatter endTime en tant que chaîne de caractères au format souhaité
-        $endAsString = $end->format('Y-m-d H:i');
-        dump($end);
-
-        // Récupérer les salles réservées en fonction de l'heure de début et de fin
-        $reservedRooms = $coursesRepository->findReservedRooms($start, $endAsString);
-
-
-        // Récupérer l'ID de l'événement que vous modifiez (si applicable)
-        $eventId = $request->query->get('eventId'); // Remplacez 'eventId' par la clé réelle
+        $eventId = $request->query->get('eventId');
 
         if ($eventId) {
-            // Récupérer l'événement en fonction de son ID
             $event = $coursesRepository->find($eventId);
 
-            // Si l'événement existe et a une salle réservée, retirer cette salle des salles réservées
             if ($event && $event->getRoom()) {
                 $eventRoomId = $event->getRoom()->getId();
                 $reservedRooms = array_filter($reservedRooms, function ($reservedRoom) use ($eventRoomId) {
@@ -1354,26 +1392,25 @@ class CalendarController extends AbstractController
                 });
             }
         }
+
         if (!empty($zoomlink)) {
-            // Si le champ "zoomlink" est rempli, aucune salle ne sera affichée
             $availableRooms = [];
         } else {
             if (empty(array_filter($materialIdsArray))) {
-                // Si aucun équipement n'est sélectionné, renvoyer toutes les salles
-                $filteredRooms = $this->roomRepository->findBy(['school' => $ecole]);
+                $filteredRooms = $roomRepository->findBy(['school' => $ecole]);
             } else {
-                // Créer le QueryBuilder filtré pour les matériaux sélectionnés
-                $queryBuilder = $this->roomRepository->createFilteredQuery($materialIdsArray);
-                // Exécuter la requête et récupérer les salles en fonction des équipements sélectionnés
-                $filteredRooms = $queryBuilder->getQuery()->getResult();
+                $queryBuilder = $roomRepository->createFilteredQuery($materialIdsArray);
+                $filteredRooms = $queryBuilder->andWhere('r.school = :school')
+                                              ->setParameter('school', $ecole)
+                                              ->getQuery()
+                                              ->getResult();
             }
-        
-            // Filtrer les salles disponibles en excluant les salles réservées
+
             $availableRooms = array_filter($filteredRooms, function ($room) use ($reservedRooms) {
                 return !in_array($room, $reservedRooms);
             });
-        
-            $availableRooms = array_values($availableRooms); // Réindexer le tableau
+
+            $availableRooms = array_values($availableRooms);
         }
 
         $roomData = [];
@@ -1393,9 +1430,6 @@ class CalendarController extends AbstractController
         $response = new JsonResponse($normalizedRooms);
         $response->setEncodingOptions(JSON_UNESCAPED_UNICODE);
 
-        // Renvoyer la réponse
         return $response;
     }
-
-
 }

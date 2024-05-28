@@ -14,6 +14,7 @@ use Doctrine\ORM\EntityRepository;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
+use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\DateTimeType;
 use Symfony\Component\Form\Extension\Core\Type\HiddenType;
 use Symfony\Component\Form\Extension\Core\Type\IntegerType;
@@ -73,6 +74,23 @@ class EvaluationsType extends AbstractType
                 'attr' => [
                     'class' => 'form-control',
                 ]
+            ])
+            ->add('materials', ChoiceType::class, [
+                'label' => 'Trier les salles par équipement',
+                'choices' => array_unique($options['equipments']),
+                'mapped' => false,
+                'multiple' => true,
+                'expanded' => true,
+                'required' => false,
+                'attr' => [
+                    'class' => 'materials-field materials-checkboxes'
+                ],
+                'row_attr' =>[
+                    "id" => "row-materials"
+                ],
+                'label_attr' => [
+                    'class' => 'label-materials form-check-label',
+                ],
             ])
             ->add('room', EntityType::class, [
                 'class' => Rooms::class,
@@ -254,6 +272,7 @@ class EvaluationsType extends AbstractType
             'ecole' => null,
             'isAdminRoute' => false, // Par défaut, vous n'êtes pas sur la route administrateur
             'user' => null, // Utilisateur pour la route Professeur
+            'equipments' => [],
         ]);
     }
 }

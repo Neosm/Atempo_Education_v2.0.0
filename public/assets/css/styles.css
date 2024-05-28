@@ -257,25 +257,10 @@ a.list-group-item .bi {
   background: #439492 !important;
 }
 
-.flatpickr-day.selected {
-  background-color: #FF7F50;
-  color: #ffff;
-  border: 0;
-}
-
-.flatpickr-day.selected:hover,
-.flatpickr-day.selected:focus {
-  background-color: rgba(255, 127, 80, 0.75);
-  color: #ffff;
-}
-
 .flatpickr-day.inRange {
   background-color: rgba(255, 127, 80, 0.15);
 }
 
-.flatpickr-day.selected {
-  background-color: rgba(255, 127, 80, 0.25);
-}
 
 .flatpickr-time input.flatpickr-hour {
   border-top-right-radius: 4px;
@@ -403,6 +388,23 @@ span.flatpickr-weekday,
   max-width: 100% !important;
 }
 
+.flatpickr-day.selected {
+  background-color: #FF7F50;
+  color: #ffff;
+  border: 0;
+}
+
+.flatpickr-day.selected:hover,
+.flatpickr-day.selected:focus {
+  background-color: rgba(255, 127, 80, 0.75);
+  color: #ffff;
+}
+
+.flatpickr-day.selected {
+  background-color: rgba(255, 127, 80, 0.25);
+}
+
+
 /* Modifier les couleurs des éléments sélectionnés */
 .flatpickr-day.today { 
   background: #439492 !important; 
@@ -412,16 +414,6 @@ span.flatpickr-weekday,
    background-color: rgba(255, 127, 80, 0.75) !important; 
 } 
 
-/* Couleur de fond pour la date d'aujourd'hui (vert) */
-.flatpickr-day.selected { 
-  background-color: #FF7F50 !important; 
-  color: #FFFFFF; 
-} 
-
-/* Couleur de fond pour les dates sélectionnées (saumon) */
-.flatpickr-day.selected:hover, .flatpickr-day.selected:focus { 
-  background-color: rgba(255, 127, 80, 0.75) !important; 
-} 
 
 /* Couleur de fond au survol/focus pour les dates sélectionnées (saumon) */
 .flatpickr-day.inRange { 
@@ -444,6 +436,17 @@ span.flatpickr-weekday,
   background-color: rgba(255, 127, 80, 0.75)!important; 
   color: #FFFFFF!important; 
 }
+
+/* Couleur de fond pour la date d'aujourd'hui (vert) */
+.flatpickr-day.selected, .flatpickr-day.selected.weekend-days { 
+  background-color: #FF7F50 !important; 
+  color: #FFFFFF!important; 
+} 
+
+/* Couleur de fond pour les dates sélectionnées (saumon) */
+.flatpickr-day.selected:hover, .flatpickr-day.selected:focus { 
+  background-color: rgba(255, 127, 80, 0.75) !important; 
+} 
 
 /* Container personnalisé */
 .custom-container {
@@ -564,4 +567,190 @@ a:hover {
 .form-check-input {
   margin-left: 0;
   margin-top: 0.3rem;
+}
+
+.form-section {
+  margin-bottom: 2rem;
+  border: 1px solid #dee2e6;
+  border-radius: 5px;
+  padding: 1.5rem;
+  background-color: #f8f9fa;
+}
+
+.form-section h4 {
+  margin-bottom: 1rem;
+  color: #495057;
+}
+
+.form-group {
+  margin-bottom: 1rem;
+}
+
+.form-switch .form-check-input:checked {
+  background-color: #439492!important;
+  border-color: #439492!important;
+}
+
+.custom-switch {
+  position: relative;
+  display: inline-block;
+  width: 60px;
+  height: 34px;
+  margin-top: 10px; /* Ajustez la marge selon vos besoins */
+}
+
+.custom-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  transition: 0.4s;
+  border-radius: 34px;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 26px;
+  width: 26px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  transition: 0.4s;
+  border-radius: 50%;
+}
+
+input:checked + .slider {
+  background-color: #439492;
+}
+
+input:checked + .slider:before {
+  transform: translateX(26px);
+}
+
+/* Pour un aspect arrondi */
+.slider.round {
+  border-radius: 34px;
+}
+
+.slider.round:before {
+  border-radius: 50%;
+}
+
+.scrollable-checkboxes {
+  max-height: 200px;
+  overflow-y: auto;
+  padding: 0.5rem;
+  border: 0px solid #dee2e6;
+  border-radius: 5px;
+  background-color: #f8f9fa;
+}
+
+/* Style personnalisé pour les cases à cocher */
+.checkbox-item input[type="checkbox"] {
+  /* Masquer la case à cocher par défaut */
+  display: none;
+}
+
+/* Style personnalisé pour l'apparence de la case à cocher */
+.checkbox-item input[type="checkbox"] + label:before {
+  /* Ajouter un style pour la case à cocher personnalisée */
+  content: "";
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 2px solid #ccc; /* Couleur de la bordure */
+  background-color: #fff; /* Couleur de fond */
+  border-radius: 4px; /* Coins arrondis */
+  margin-right: 10px; /* Marge à droite pour l'étiquette */
+}
+
+/* Style personnalisé pour la case à cocher cochée */
+.checkbox-item input[type="checkbox"]:checked + label:before {
+  background-color: #439492; /* Couleur de fond lorsque la case est cochée */
+  border-color: #439492;
+}
+
+/* Style personnalisé pour l'étiquette */
+.checkbox-item label {
+  /* Ajouter du style pour améliorer l'apparence de l'étiquette */
+  font-weight: normal;
+  cursor: pointer;
+}
+
+/* Autres styles pour la mise en page */
+.checkbox-column {
+  column-count: 3;
+}
+
+.checkbox-item {
+  break-inside: avoid;
+  padding: 0.25rem;
+}
+
+/* Barre de défilement */
+.scrollable-checkboxes::-webkit-scrollbar {
+  width: 8px; /* Largeur de la barre de défilement */
+}
+
+/* Arrière-plan de la barre de défilement */
+.scrollable-checkboxes::-webkit-scrollbar-track {
+  background: #f1f1f1; /* Couleur de fond de la piste de la barre de défilement */
+  border-radius: 10px; /* Rayon de bordure de la piste */
+}
+
+/* Curseur de la barre de défilement */
+.scrollable-checkboxes::-webkit-scrollbar-thumb {
+  background: #888; /* Couleur du curseur de la barre de défilement */
+  border-radius: 5px; /* Rayon de bordure du curseur */
+}
+
+/* Lorsque survolé, changer la couleur du curseur */
+.scrollable-checkboxes::-webkit-scrollbar-thumb:hover {
+  background: #555; /* Couleur du curseur au survol */
+}
+
+.form-check-input[type="radio"] {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  width: 20px;
+  height: 20px;
+  border: 2px solid #439492;
+  border-radius: 50%;
+  outline: none;
+  cursor: pointer;
+  position: relative;
+  margin-right: 10px;
+  transition: box-shadow 0.15s ease-in-out;
+}
+
+.form-check-input[type="radio"]:checked::before {
+  content: '';
+  display: block;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #439492;
+  position: absolute;
+  top: 2px;
+  left: 2px;
+}
+
+.form-check-input[type="radio"]:checked::after {
+  background: #439492;
+}
+
+.form-check-input[type="radio"]:focus {
+  box-shadow: 0 0 0 0.2rem rgba(67, 148, 146, 0.25);
+  border: 2px solid #439492;
 }

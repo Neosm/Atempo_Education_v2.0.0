@@ -1,69 +1,93 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Ajouter un nouvel événement
-{% endblock %}
-
+{% block title %}Ajouter un nouvel événement{% endblock %}
 
 {% block stylesheets %}
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-<link href="https://cdn.jsdelivr.net/npm/tom-select@2.0.0/dist/css/tom-select.css" rel="stylesheet">
-
+    <link href="https://cdn.jsdelivr.net/npm/tom-select@2.0.0/dist/css/tom-select.css" rel="stylesheet">
 {% endblock %}
 
-
 {% block body %}
-	<h1>Ajouter un événement</h1>
+    <div class="container mt-5">
+        <div class="card shadow-lg">
+            <div class="card-header bg-white text-primary-color d-flex align-items-center">
+                <h1 class="h3 mb-3 primary-color mt-3 col-10">
+                    <i class="bi bi-calendar-event h3 me-1"></i>
+                    Ajouter un événement
+                </h1>
+            </div>
+            <div class="card-body">
+                {{ form_start(form) }}
 
-	{{ form_start(form) }}
+                <div class="form-section">
+                    <h4>Détails de l'événement</h4>
+                    <div class="form-group">
+                        {{ form_row(form.name) }}
+                    </div>
+                    <div class="form-group row">
+                        <div class="col-md-6">
+                            {{ form_row(form.start) }}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form_row(form.end) }}
+                        </div>
+                    </div>
+                </div>
 
-	<div class="container mt-5">
-		<div class="row mb-3">
-			<div class="col">
-				{{ form_row(form.name) }}
-			</div>
-		</div>
+                <div class="form-section">
+                    <h4>Participants</h4>
+                    <div class="form-group">
+                        {{ form_row(form.users) }}
+                    </div>
+                </div>
 
-		<div class="row mb-3">
-			<div class="col">
-				{{ form_row(form.start) }}
-			</div>
-			<div class="col">
-				{{ form_row(form.end) }}
-			</div>
-		</div>
-		<div class="row mb-3">
-			<div class="col">
-				{{ form_row(form.users) }}
-			</div>
-		</div>
-		<div class="col">
-            {{ form_row(form.room) }}
+                <div class="form-section">
+                    <h4>Salle</h4>
+                    <div class="form-group">
+                        <div class="form-group row">
+                            <div class="col-md-8">
+                                <div class="scrollable-checkboxes">
+                                    <div class="checkbox-column">
+                                        {% for checkbox in form.materials %}
+                                            <div class="checkbox-item">
+                                                {{ form_widget(checkbox, {'attr': {'class': 'form-check-input'}}) }}
+                                                {{ form_label(checkbox) }}
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                {{ form_row(form.room) }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h4>Description</h4>
+                    <div class="form-group">
+                        {{ form_row(form.description) }}
+                    </div>
+                </div>
+
+                <div class="text-center mb-4">
+                    <button class="btn primary-custom-button">{{ button_label|default('Sauvegarder') }}</button>
+                    <a href="{{ path('app_calendar_home') }}" class="btn secondary-custom-button ms-3">Retour à l'agenda</a>
+                </div>
+
+                {{ form_end(form) }}
+            </div>
         </div>
-		<div class="row mb-3">
-			<div class="col">
-				{{ form_row(form.description) }}
-			</div>
-		</div>
-
-		<div class="row mb-4">
-			<div class="col">
-				<button class="btn btn-primary">{{ button_label|default('Sauvegarder') }}</button>
-				<a href="{{ path('app_calendar_home') }}" class="btn primary-custom-button float-end">Retour à l'agenda</a>
-			</div>
-		</div>
-	</div>
-
-	{{ form_end(form) }}
-
-
+    </div>
 {% endblock %}
 
 {% block javascripts %}
 <script src="https://cdn.jsdelivr.net/npm/tom-select@2.0.0/dist/js/tom-select.complete.min.js"></script>
-<script src = "https://cdn.jsdelivr.net/npm/flatpickr"> </script> 
-<script src = "https://npmcdn.com/flatpickr/dist/l10n/fr.js" > </script> 
-<script >
-	$(document).ready(function() {
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/fr.js"></script>
+<script>
+    $(document).ready(function() {
 		var events_Uusersselect = new TomSelect('#events_users', {
 			hideSelected: true,
 			maxOptions: 10,
@@ -76,132 +100,234 @@
 				}
 			}
 		});
+        function roundUpHour(date) {
+            var hour = date.getHours();
+            if (date.getMinutes() > 0) {
+                hour += 1;
+            }
+            return hour;
+        }
 
-				function roundUpHour(date) {
-			var hour = date.getHours();
-			
-			// Arrondir à l'heure supérieure
-			if (date.getMinutes() > 0) {
-				hour += 1;
-			}
+        function roundUpDateAndHour() {
+            var currentDate = new Date();
+            var roundedHour = roundUpHour(currentDate);
+            currentDate.setMinutes(0);
+            currentDate.setSeconds(0);
+            if (roundedHour >= 24) {
+                currentDate.setDate(currentDate.getDate() + 1);
+                roundedHour = 0;
+            }
+            currentDate.setHours(roundedHour);
+            return currentDate;
+        }
 
-			// Retourner l'heure arrondie
-			return hour;
-		}
+        function initDatePicker(selector, options) {
+            var roundedDate = roundUpDateAndHour();
+            var flatpickrOptions = {
+                defaultDate: roundedDate,
+                enableTime: options.enableTime || false,
+                time_24hr: true,
+                monthSelectorType: 'static',
+                disableMobile: true,
+                altInput: true,
+                altFormat: "j M Y, H:i",
+                dateFormat: "Y-m-d H:i:s",
+                ...options
+            };
 
-		function roundUpDateAndHour() {
-			var currentDate = new Date();
-			var roundedHour = roundUpHour(currentDate);
-			
-			// Réinitialiser les minutes et les secondes à zéro
-			currentDate.setMinutes(0);
-			currentDate.setSeconds(0);
-
-			// Si l'heure arrondie dépasse minuit, passer au jour suivant
-			if (roundedHour >= 24) {
-				currentDate.setDate(currentDate.getDate() + 1);
-				roundedHour = 0; // Réinitialiser l'heure à zéro
-			}
-
-			// Définir l'heure arrondie sur la date actuelle
-			currentDate.setHours(roundedHour);
-
-			// Retourner la date et l'heure arrondies
-			return currentDate;
-		}
-		function initDatePicker(selector, options) {
-			var roundedDate = roundUpDateAndHour();
-			var flatpickrOptions = {
-				defaultDate: roundedDate,
-				enableTime: options.enableTime || false,
-				time_24hr: true, // Utiliser le format 24 heures
-				monthSelectorType: 'static',
-				disableMobile: true,
-				altInput: true,
-				altFormat: "j M Y, H:i",
-				dateFormat: "Y-m-d H:i:s",
-
-				
-				...options
-			};
-
-			flatpickr(selector, flatpickrOptions);
-		}
-
+            flatpickr(selector, flatpickrOptions);
+        }
 		// Utilisation du DatePicker avec des options personnalisées
-		initDatePicker('.datetimepickr', {
-			enableTime: true,
-			allowInput: true,
-			nextArrow: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Pro 6.1.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2022 Fonticons, Inc. --><path d="M96 480c-8.188 0-16.38-3.125-22.62-9.375c-12.5-12.5-12.5-32.75 0-45.25L242.8 256L73.38 86.63c-12.5-12.5-12.5-32.75 0-45.25s32.75-12.5 45.25 0l192 192c12.5 12.5 12.5 32.75 0 45.25l-192 192C112.4 476.9 104.2 480 96 480z"/></svg>`,
-			prevArrow: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Pro 6.1.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2022 Fonticons, Inc. --><path d="M224 480c-8.188 0-16.38-3.125-22.62-9.375l-192-192c-12.5-12.5-12.5-32.75 0-45.25l192-192c12.5-12.5 32.75-12.5 45.25 0s12.5 32.75 0 45.25L77.25 256l169.4 169.4c12.5 12.5 12.5 32.75 0 45.25C240.4 476.9 232.2 480 224 480z"/></svg>`,
-			locale: {
-				firstDayOfWeek: 1,
-				weekdays: {
-					shorthand: ["dim", "lun", "mar", "mer", "jeu", "ven", "sam"],
-					longhand: [
-						"dimanche",
-						"lundi",
-						"mardi",
-						"mercredi",
-						"jeudi",
-						"vendredi",
-						"samedi",
-					],
-				},
-				months: {
-					shorthand: [
-						"janv",
-						"févr",
-						"mars",
-						"avr",
-						"mai",
-						"juin",
-						"juil",
-						"août",
-						"sept",
-						"oct",
-						"nov",
-						"déc",
-					],
-					longhand: [
-						"Janvier",
-						"Février",
-						"Mars",
-						"Avril",
-						"Mai",
-						"Juin",
-						"Juillet",
-						"Août",
-						"Septembre",
-						"Octobre",
-						"Novembre",
-						"Décembre",
-					],
-				},
-				ordinal: (nth) => {
-					if (nth > 1) return "";
-					return "er";
-				},
-				rangeSeparator: " au ",
-				weekAbbreviation: "Sem",
-				scrollTitle: "Défiler pour augmenter la valeur",
-				toggleTitle: "Cliquer pour basculer",
-			}, // Supprimez la virgule ici
-			onDayCreate: function(_, _, _, dayElem) {
-				if (dayElem.dateObj.getDay() === 0 || dayElem.dateObj.getDay() === 6) {
-					dayElem.className += ' weekend-days';
-				}
-			}
-		});
-
-		// Vous pouvez également créer une fonction pour le DateAndTimePicker si nécessaire
-		function DateAndTimePicker(selector) {
-			initDatePicker(selector, {
+			initDatePicker('.myDateTimePicker', {
 				enableTime: true,
+				allowInput: true,
+				nextArrow: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Pro 6.1.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2022 Fonticons, Inc. --><path d="M96 480c-8.188 0-16.38-3.125-22.62-9.375c-12.5-12.5-12.5-32.75 0-45.25L242.8 256L73.38 86.63c-12.5-12.5-12.5-32.75 0-45.25s32.75-12.5 45.25 0l192 192c12.5 12.5 12.5 32.75 0 45.25l-192 192C112.4 476.9 104.2 480 96 480z"/></svg>`,
+				prevArrow: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Pro 6.1.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2022 Fonticons, Inc. --><path d="M224 480c-8.188 0-16.38-3.125-22.62-9.375l-192-192c-12.5-12.5-12.5-32.75 0-45.25l192-192c12.5-12.5 32.75-12.5 45.25 0s12.5 32.75 0 45.25L77.25 256l169.4 169.4c12.5 12.5 12.5 32.75 0 45.25C240.4 476.9 232.2 480 224 480z"/></svg>`,
+				locale: {
+					firstDayOfWeek: 1,
+					weekdays: {
+						shorthand: ["dim", "lun", "mar", "mer", "jeu", "ven", "sam"],
+						longhand: [
+							"dimanche",
+							"lundi",
+							"mardi",
+							"mercredi",
+							"jeudi",
+							"vendredi",
+							"samedi",
+						],
+					},
+					months: {
+						shorthand: [
+							"janv",
+							"févr",
+							"mars",
+							"avr",
+							"mai",
+							"juin",
+							"juil",
+							"août",
+							"sept",
+							"oct",
+							"nov",
+							"déc",
+						],
+						longhand: [
+							"Janvier",
+							"Février",
+							"Mars",
+							"Avril",
+							"Mai",
+							"Juin",
+							"Juillet",
+							"Août",
+							"Septembre",
+							"Octobre",
+							"Novembre",
+							"Décembre",
+						],
+					},
+					ordinal: (nth) => {
+						if (nth > 1) return "";
+						return "er";
+					},
+					rangeSeparator: " au ",
+					weekAbbreviation: "Sem",
+					scrollTitle: "Défiler pour augmenter la valeur",
+					toggleTitle: "Cliquer pour basculer",
+				}, // Supprimez la virgule ici
+				onDayCreate: function(_, _, _, dayElem) {
+					if (dayElem.dateObj.getDay() === 0 || dayElem.dateObj.getDay() === 6) {
+						dayElem.className += ' weekend-days';
+					}
+				}
+			});
+		var eventStart = '{{ eventStart|default(null) }}';
+		if (eventStart) {
+			// Appeler la fonction pour le DatePicker du champ de début
+			initDatePicker('.datetimepickr-start', {
+            	defaultDate: eventStart,
+				enableTime: true,
+				allowInput: true,
+				nextArrow: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Pro 6.1.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2022 Fonticons, Inc. --><path d="M96 480c-8.188 0-16.38-3.125-22.62-9.375c-12.5-12.5-12.5-32.75 0-45.25L242.8 256L73.38 86.63c-12.5-12.5-12.5-32.75 0-45.25s32.75-12.5 45.25 0l192 192c12.5 12.5 12.5 32.75 0 45.25l-192 192C112.4 476.9 104.2 480 96 480z"/></svg>`,
+				prevArrow: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Pro 6.1.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2022 Fonticons, Inc. --><path d="M224 480c-8.188 0-16.38-3.125-22.62-9.375l-192-192c-12.5-12.5-12.5-32.75 0-45.25l192-192c12.5-12.5 32.75-12.5 45.25 0s12.5 32.75 0 45.25L77.25 256l169.4 169.4c12.5 12.5 12.5 32.75 0 45.25C240.4 476.9 232.2 480 224 480z"/></svg>`,
+				locale: {
+					firstDayOfWeek: 1,
+					weekdays: {
+						shorthand: ["dim", "lun", "mar", "mer", "jeu", "ven", "sam"],
+						longhand: ["dimanche", "lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi"],
+					},
+					months: {
+						shorthand: ["janv", "févr", "mars", "avr", "mai", "juin", "juil", "août", "sept", "oct", "nov", "déc"],
+						longhand: ["Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"],
+					},
+					ordinal: (nth) => {
+						if (nth > 1) return "";
+						return "er";
+					},
+					rangeSeparator: " au ",
+					weekAbbreviation: "Sem",
+					scrollTitle: "Défiler pour augmenter la valeur",
+					toggleTitle: "Cliquer pour basculer",
+				},
+				onDayCreate: function(_, _, _, dayElem) {
+					if (dayElem.dateObj.getDay() === 0 || dayElem.dateObj.getDay() === 6) {
+						dayElem.className += ' weekend-days';
+					}
+				}
+			});
+		}
+		 // Configuration pour l'heure de fin
+    	var eventEnd = '{{ eventEnd|default(null) }}';
+		if (eventEnd) {
+			// Appeler la fonction pour le DatePicker du champ de fin
+			initDatePicker('.datetimepickr-end', {
+				defaultDate: eventEnd,
+				enableTime: true,
+				allowInput: true,
+				nextArrow: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Pro 6.1.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2022 Fonticons, Inc. --><path d="M96 480c-8.188 0-16.38-3.125-22.62-9.375c-12.5-12.5-12.5-32.75 0-45.25L242.8 256L73.38 86.63c-12.5-12.5-12.5-32.75 0-45.25s32.75-12.5 45.25 0l192 192c12.5 12.5 12.5 32.75 0 45.25l-192 192C112.4 476.9 104.2 480 96 480z"/></svg>`,
+				prevArrow: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Pro 6.1.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2022 Fonticons, Inc. --><path d="M224 480c-8.188 0-16.38-3.125-22.62-9.375l-192-192c-12.5-12.5-12.5-32.75 0-45.25l192-192c12.5-12.5 32.75-12.5 45.25 0s12.5 32.75 0 45.25L77.25 256l169.4 169.4c12.5 12.5 12.5 32.75 0 45.25C240.4 476.9 232.2 480 224 480z"/></svg>`,
+				locale: {
+					firstDayOfWeek: 1,
+					weekdays: {
+						shorthand: ["dim", "lun", "mar", "mer", "jeu", "ven", "sam"],
+						longhand: ["dimanche", "lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi"],
+					},
+					months: {
+						shorthand: ["janv", "févr", "mars", "avr", "mai", "juin", "juil", "août", "sept", "oct", "nov", "déc"],
+						longhand: ["Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"],
+					},
+					ordinal: (nth) => {
+						if (nth > 1) return "";
+						return "er";
+					},
+					rangeSeparator: " au ",
+					weekAbbreviation: "Sem",
+					scrollTitle: "Défiler pour augmenter la valeur",
+					toggleTitle: "Cliquer pour basculer",
+				},
+				onDayCreate: function(_, _, _, dayElem) {
+					if (dayElem.dateObj.getDay() === 0 || dayElem.dateObj.getDay() === 6) {
+						dayElem.className += ' weekend-days';
+					}
+				}
+			});
+		}
+		// Sélection de la salle et des matériaux
+		var roomSelect = document.querySelector('.room-select');
+		var startField = $('.datetimepickr-start');
+		var endField = $('.datetimepickr-end');
+		var materialsCheckboxes = document.querySelectorAll('.checkbox-item input[type="checkbox"]');
+
+		// Écouter les changements sur les champs de matériaux et les champs de début et de fin
+		materialsCheckboxes.forEach(function(checkbox) {
+			checkbox.addEventListener('change', updateRooms);
+		});
+		startField.change(updateRooms);
+		endField.change(updateRooms);
+
+		// Fonction pour mettre à jour les salles en fonction des matériaux sélectionnés et des heures de début et de fin
+		function updateRooms() {
+			var selectedMaterials = Array.from(materialsCheckboxes).filter(function(checkbox) {
+				return checkbox.checked;
+			}).map(function(checkbox) {
+				return checkbox.value;
+			});
+
+			var startValue = startField.val();
+			var endValue = endField.val();
+
+			// Construction de l'URL de l'API avec les paramètres appropriés
+			var apiUrl = '/agenda/api/salles';
+			apiUrl += '?materials=' + selectedMaterials.join(',');
+			apiUrl += '&start=' + startValue;
+			apiUrl += '&end=' + endValue;
+
+			// Récupération des salles en fonction des équipements sélectionnés et des heures de début et de fin
+			fetch(apiUrl)
+			.then(function(response) {
+				return response.json();
+			})
+			.then(function(rooms) { 
+				// Mise à jour des options de sélection de la salle
+				while (roomSelect.firstChild) {
+					roomSelect.removeChild(roomSelect.firstChild);
+				}
+
+				rooms.forEach(function(room) {
+					var option = document.createElement('option');
+					option.value = room.id;
+					option.textContent = room.name;
+					roomSelect.appendChild(option);
+				});
+			})
+			.catch(function(error) {
+				console.log(error);
 			});
 		}
 
+		// Appel initial pour mettre à jour les salles
+		updateRooms();
 	});
 </script>
 {% endblock %}
-

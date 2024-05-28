@@ -12,107 +12,127 @@
 
 
 {% block body %}
-	<h1>Ajouter un examen</h1>
+    <div class="container mt-5">
+        <div class="card shadow-lg">
+            <div class="card-header bg-white text-primary-color d-flex align-items-center">
+                <h1 class="h3 mb-3 primary-color mt-3 col-10">
+                    <i class="bi bi-pencil-square h3 me-1"></i>
+                    {% if app.request.attributes.get('_route') == 'app_calendar_evaluation_add' %}
+						Ajouter un examen 
+					{% else %}
+						Modifier l'examen
+					{% endif %}
+                </h1>
+            </div>
+            <div class="card-body">
+                {{ form_start(form) }}
 
-{{ form_start(form) }}
+                <div class="form-section">
+                    <h4>Détails de l'examen</h4>
+                    <div class="form-group">
+                        {{ form_row(form.discipline) }}
+                    </div>
+                    <div class="form-group row">
+                        <div class="col-md-4">
+                            {{ form_row(form.start) }}
+                        </div>
+                        <div class="col-md-4">
+                            {{ form_row(form.duration) }}
+                        </div>
+                        <div class="col-md-4">
+                            {{ form_row(form.teacher) }}
+                        </div>
+                    </div>
+                </div>
+				<div class="form-section">
+                    <div class="d-flex align-items-center">
+                        <h4 class="flex-grow-1 mb-0">Salle ou lien zoom</h4>
+                    </div>
+					<div class="form-group">
+                        <div class="form-group row">
+                            <div class="col-md-8">
+                                <div class="scrollable-checkboxes">
+                                    <div class="checkbox-column">
+                                        {% for checkbox in form.materials %}
+                                            <div class="checkbox-item">
+                                                {{ form_widget(checkbox, {'attr': {'class': 'form-check-input'}}) }}
+                                                {{ form_label(checkbox) }}
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                {{ form_row(form.room) }}
+                            </div>
+                        </div>
+                    </div>
+				</div>
+                <div class="form-section">
+                    <h4>Informations supplémentaires</h4>
+                    <div class="form-group row">
+                        <div class="col-md-6">
+                            {{ form_row(form.coefficient) }}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form_row(form.max_notation) }}
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <div class="col-md-6">
+                            {{ form_row(form.program) }}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form_row(form.lesson) }}
+                        </div>
+                    </div>
+                </div>
 
-<div class="container mt-5">
-    <div class="row mb-3">
-        <div class="col">
-            {{ form_row(form.discipline) }}
-        </div>
-    </div>
+                <div class="form-section">
+                    <div class="d-flex align-items-center">
+                        <h4 class="flex-grow-1 mb-0">Participants</h4>
+                        <div class="d-flex flex-column align-items-center form-check form-switch">
+                            <label class="form-check-label text-center" for="{{ form.studentswitch.vars.id }}">Sélectionner le ou les élèves concerné(s)</label>
+                            <div class="custom-switch">
+                                {{ form_widget(form.studentswitch, {'attr': {'class': 'custom-switch-input'}}) }}
+                                <label class="slider round" for="{{ form.studentswitch.vars.id }}"></label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        {{ form_row(form.studentClasses) }}
+                        {{ form_row(form.students) }}
+                    </div>
+                </div>
 
-    <div class="row mb-3">
-        <div class="col">
-            {{ form_row(form.start) }}
-        </div>
-        <div class="col">
-            {{ form_row(form.duration) }}
-        </div>
-        <div class="col">
-            {{ form_row(form.teacher) }}
-        </div>
-    </div>
+                {% if form.comment is defined %}
+                    <div class="form-section">
+                        <h4>Commentaire</h4>
+                        <div class="form-group">
+                            {{ form_row(form.comment) }}
+                        </div>
+                    </div>
+                {% endif %}
 
-	    <div class="row mb-3">
-        <div class="col">
-            {{ form_row(form.room) }}
-        </div>
-        <div class="col">
-            {{ form_row(form.coefficient) }}
-        </div>
-        <div class="col">
-            {{ form_row(form.max_notation) }}
-        </div>
-    </div>
+                {% if form.objective is defined %}
+                    <div class="form-section">
+                        <h4>Objectifs</h4>
+                        <div class="form-group">
+                            {{ form_row(form.objective) }}
+                        </div>
+                    </div>
+                {% endif %}
 
-	
-    <div class="row mb-3">
-        <div class="col">
-            {{ form_row(form.program) }}
-        </div>
-        <div class="col">
-            {{ form_row(form.lesson) }}
-        </div>
-    </div>
+                <div class="text-center mb-4">
+                    <button class="btn primary-custom-button">{{ button_label|default('Sauvegarder') }}</button>
+                    <a href="{{ path('app_calendar_home') }}" class="btn secondary-custom-button ms-3">Retour à l'agenda</a>
+                </div>
 
-    <div class="row mb-3">
-        <div class="col">
-            <label for="{{ form.studentswitch.vars.id }}">Sélectionner le ou les élèves concerné(s)</label>
-        </div>
-    </div>
-    
-    <div class="row mb-3">
-        <div class="col">
-            <div class="form-check form-switch">
-            {% if app.request.attributes.get('_route') == 'agenda_edit_event' %}
-                {{ form_widget(form.studentswitch, {'attr': {'checked': event.students is not empty}}) }}
-            {% else %}
-                {{ form_widget(form.studentswitch) }}
-            {% endif %}
-            {{ form_label(form.studentswitch) }}
+                {{ form_row(form.reservedRooms, {'attr': {'style': 'display: none;'}}) }}
+                {{ form_end(form) }}
             </div>
         </div>
     </div>
-
-    <div class="row mb-3">
-        <div class="col">
-            {{ form_row(form.studentClasses) }}
-            {{ form_row(form.students) }}
-        </div>
-    </div>
-
-    {% if form.comment is defined %}
-        <div class="row mb-3">
-            <div class="col">
-                {{ form_row(form.comment) }}
-            </div>
-        </div>
-    {% endif %}
-
-    {% if form.objective is defined %}
-        <div class="row mb-3">
-            <div class="col">
-                {{ form_row(form.objective) }}
-            </div>
-        </div>
-    {% endif %}
-
-    <div class="row mb-4">
-        <div class="col">
-            <button class="btn btn-primary">{{ button_label|default('Sauvegarder') }}</button>
-	        <a href="{{ path('app_calendar_home') }}" class="btn primary-custom-button float-end">Retour à l'agenda</a>
-        </div>
-    </div>
-</div>
-
-{{ form_row(form.reservedRooms, {'attr': {'style': 'display: none;'}}) }}
-
-
-{{ form_end(form) }}
-
-
 {% endblock %}
 
 
@@ -274,6 +294,10 @@
 				
 				...options
 			};
+			var eventStart = '{{ eventStart|default(null) }}';
+			if (eventStart) {
+				flatpickrOptions.defaultDate = eventStart;
+			}
 
 			flatpickr(selector, flatpickrOptions);
 		}
@@ -352,7 +376,7 @@
 		}
 
 
-		var materialsCheckboxes = document.querySelectorAll('.materials-checkboxes input[type="checkbox"]');
+		var materialsCheckboxes = document.querySelectorAll('.checkbox-item input[type="checkbox"]');
 		var roomSelect = document.querySelector('.room-select');
 		var startField = $('#evaluations_start');
 		var durationField = $('#evaluations_duration');
@@ -379,7 +403,7 @@
 			// Récupérer la valeur du champ zoomlink
 
 			// Construire l'URL de l'API avec les paramètres appropriés
-			var apiUrl = '/agenda/cours/api/rooms';
+			var apiUrl = '/agenda/api/salles';
 			apiUrl += '?materials=' + selectedMaterials.join(',');
 			apiUrl += '&start=' + startValue;
 			apiUrl += '&duration=' + durationValue;

@@ -24,36 +24,15 @@ class CoursesRepository extends ServiceEntityRepository
 
     public function findEventsByUser(Users $user)
     {
-        return $this->createQueryBuilder('e')
-            ->leftJoin('e.teacher', 't')
-            ->leftJoin('e.studentClasses', 'sc')
+        return $this->createQueryBuilder('c')
+            ->leftJoin('c.teacher', 't')
+            ->leftJoin('c.studentClasses', 'sc')
             ->leftJoin('sc.students', 's')
-            ->leftJoin('e.students', 'u') // Ajout de la jointure avec la relation ManyToMany users
+            ->leftJoin('c.students', 'u') // Ajout de la jointure avec la relation ManyToMany users
             ->andWhere('t = :user OR s = :user OR u = :user') // Ajout de la condition pour vérifier la relation avec users
             ->setParameter('user', $user)
             ->getQuery()
             ->getResult();
-    }
-
-    public function findReservedRooms($start, $end): array
-    {
-        $qb = $this->createQueryBuilder('e')
-            ->select('r')
-            ->from('App\Entity\Rooms', 'r')
-            ->leftJoin('e.room', 'room')
-            ->andWhere(
-                '(:start >= e.start AND :start < DATE_ADD(e.start, e.duration, \'MINUTE\')) OR ' .
-                '(:end > e.start AND :end <= DATE_ADD(e.start, e.duration, \'MINUTE\')) OR ' .
-                '(:start < e.start AND :end > DATE_ADD(e.start, e.duration, \'MINUTE\'))'
-            )
-            ->setParameter('start', new \DateTime($start))
-            ->setParameter('end', new \DateTime($end))
-            ->andWhere('room.id = r.id');
-
-
-        $reservedRooms = $qb->getQuery()->getResult();
-
-        return $reservedRooms;
     }
 
 

@@ -162,6 +162,7 @@
 							<button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal">
 								Supprimer
 							</button>
+							<a href="{{ path('app_attendance_add', {'id': event.id, 'type': type}) }}" class="btn btn-dark add-attendance" data-event-id="">Faire l'appel</a>
 						</div>
 					{% endif %}
 				</div>
